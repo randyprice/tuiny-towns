@@ -1,37 +1,49 @@
 use std::collections::HashSet;
 
-use crate::board::{BlueBuilding, MagentaBuilding,};
-use crate::board::{Board, BuildingConfig, BuildingType};
+use crate::board::Board;
+use crate::building::{BlueBuilding, BuildingType, MagentaBuilding};
+use crate::building_config::BuildingConfig;
 
 // -----------------------------------------------------------------------------
-fn score_unfed_cottages(board: &Board, building_config: &BuildingConfig) -> bool {
-    let score = building_config.magenta() == MagentaBuilding::GrandMausoleumOfTheRodina
+fn score_unfed_cottages(
+    board: &Board,
+    building_config: &BuildingConfig,
+) -> bool {
+    let score =
+        building_config.magenta() == MagentaBuilding::GrandMausoleumOfTheRodina
         && board.count_building_type(BuildingType::Magenta) > 0;
 
     score
 }
 
 // -----------------------------------------------------------------------------
-fn score_cottages(board: &Board, building_config: &BuildingConfig, fed_idxs: &HashSet<usize>) -> i32 {
-    let score_unfed_cottages = score_unfed_cottages(board, building_config);
+fn score_cottages(
+    board: &Board,
+    building_config: &BuildingConfig,
+    fed_idxs: &HashSet<usize>,
+) -> i32 {
+    let score_unfed = score_unfed_cottages(board, building_config);
     let score = board.spaces()
         .iter()
         .enumerate()
-        .fold(0, |mut n, (idx, space)| {
-                if let Some(building_type) = space.building_type() {
-                    if building_type == BuildingType::Blue
-                        && (fed_idxs.contains(&idx) || score_unfed_cottages) {
-                        n += 3;
-                    }
-                }
-            n
-        });
+        .fold(0, |n, (idx, space)|
+            if space.building_type_eq(BuildingType::Blue)
+                && (fed_idxs.contains(&idx) || score_unfed) {
+                n + 3
+            } else {
+                n
+            }
+        );
 
     score
 }
 
 // -----------------------------------------------------------------------------
-pub fn score_blue(board: &Board, building_config: &BuildingConfig, fed_idxs: &HashSet<usize>) -> i32 {
+pub fn score(
+    board: &Board,
+    building_config: &BuildingConfig,
+    fed_idxs: &HashSet<usize>,
+) -> i32 {
     let score = match building_config.blue() {
         BlueBuilding::Cottage => score_cottages(board, building_config, fed_idxs),
     };
@@ -41,9 +53,9 @@ pub fn score_blue(board: &Board, building_config: &BuildingConfig, fed_idxs: &Ha
 
 // =============================================================================
 #[cfg(test)]
-mod tests {
+mod test {
     use super::*;
-    use crate::board::{
+    use crate::building::{
         BlackBuilding, BlueBuilding, GrayBuilding, GreenBuilding,
         MagentaBuilding, OrangeBuilding, RedBuilding, YellowBuilding
     };

@@ -1,266 +1,7 @@
-use std::collections::{HashMap, HashSet};
-use log::{warn};
+use std::collections::HashSet;
 
-use strum::IntoEnumIterator;
-use strum_macros::EnumIter;
-
-#[derive(Copy, Clone, Debug, Eq, PartialEq)]
-pub enum Resource {
-    Brick,
-    Glass,
-    Stone,
-    Wheat,
-    Wood
-}
-
-#[derive(Copy, Clone, Debug, EnumIter, Eq, Hash, PartialEq)]
-pub enum BuildingType {
-    Black,
-    Blue,
-    Gray,
-    Green,
-    Magenta,
-    Orange,
-    Red,
-    Yellow,
-}
-
-#[derive(Copy, Clone, Debug, Eq, PartialEq)]
-pub enum BlackBuilding {
-    Bank,
-    Factory,
-    TradingPost,
-    Warehouse,
-}
-
-#[derive(Copy, Clone, Debug, Eq, PartialEq)]
-pub enum BlueBuilding {
-    Cottage,
-}
-
-#[derive(Copy, Clone, Debug, Eq, PartialEq)]
-pub enum GrayBuilding {
-    Fountain,
-    Millstone,
-    Shed,
-    Well,
-}
-
-#[derive(Copy, Clone, Debug, Eq, PartialEq)]
-pub enum GreenBuilding {
-    Almshouse,
-    FeastHall,
-    Inn,
-    Tavern,
-}
-
-#[derive(Copy, Clone, Debug, Eq, PartialEq)]
-pub enum MagentaBuilding {
-    ArchitectsGuild,
-    ArchiveOfTheSecondAge,
-    BarrettCastle,
-    CathedralOfCaterina,
-    FortIronweed,
-    GrandMausoleumOfTheRodina,
-    GroveUniversity,
-    MandrasPalace,
-    ObeliskOfTheCrescent,
-    OpaleyesWatch,
-    ShrineOfTheElderTree,
-    SilvaForum,
-    StatueOfTheBondmaker,
-    TheSkyBaths,
-    TheStarloom,
-}
-
-#[derive(Copy, Clone, Debug, Eq, PartialEq)]
-pub enum OrangeBuilding {
-    Abbey,
-    Chapel,
-    Cloister,
-    Temple,
-}
-
-#[derive(Copy, Clone, Debug, Eq, PartialEq)]
-pub enum RedBuilding {
-    Farm,
-    Granary,
-    Greenhouse,
-    Orchard,
-}
-
-#[derive(Copy, Clone, Debug, Eq, PartialEq)]
-pub enum YellowBuilding {
-    Bakery,
-    Market,
-    Tailor,
-    Theater,
-}
-
-#[derive(Copy, Clone, Debug, Eq, PartialEq)]
-pub enum Building {
-    Black(BlackBuilding),
-    Blue(BlueBuilding),
-    Gray(GrayBuilding),
-    Green(GreenBuilding),
-    Magenta(MagentaBuilding),
-    Orange(OrangeBuilding),
-    Red(RedBuilding),
-    Yellow(YellowBuilding),
-}
-
-
-#[derive(Clone, Debug, Eq, PartialEq)]
-pub enum Space {
-    Building(BuildingType),
-    BuildingWithOptResource(BuildingType, Option<Resource>),
-    BuildingWithResource(BuildingType, Resource),
-    BuildingWithResources(BuildingType, Vec<Resource>, usize),
-    Empty,
-    Resource(Resource),
-}
-
-impl Space {
-    pub fn building_type(&self) -> Option<BuildingType> {
-        let building_type_opt = match self {
-            Space::Building(building_type)
-            | Space::BuildingWithOptResource(building_type, _)
-            | Space::BuildingWithResource(building_type, _)
-            | Space::BuildingWithResources(building_type, _, _) =>
-                Some(*building_type),
-            _ => None
-        };
-
-        building_type_opt
-    }
-}
-
-// -----------------------------------------------------------------------------
-pub trait Build {
-    fn to_building(&self) -> Building;
-}
-
-impl Build for BlackBuilding {
-    fn to_building(&self) -> Building {
-        Building::Black(*self)
-    }
-}
-
-impl Build for BlueBuilding {
-    fn to_building(&self) -> Building {
-        Building::Blue(*self)
-    }
-}
-
-impl Build for GrayBuilding {
-    fn to_building(&self) -> Building {
-        Building::Gray(*self)
-    }
-}
-
-impl Build for GreenBuilding {
-    fn to_building(&self) -> Building {
-        Building::Green(*self)
-    }
-}
-
-impl Build for MagentaBuilding {
-    fn to_building(&self) -> Building {
-        Building::Magenta(*self)
-    }
-}
-
-impl Build for OrangeBuilding {
-    fn to_building(&self) -> Building {
-        Building::Orange(*self)
-    }
-}
-
-impl Build for RedBuilding {
-    fn to_building(&self) -> Building {
-        Building::Red(*self)
-    }
-}
-
-impl Build for YellowBuilding {
-    fn to_building(&self) -> Building {
-        Building::Yellow(*self)
-    }
-}
-
-// =============================================================================
-pub struct BuildingConfig {
-    black: BlackBuilding,
-    blue: BlueBuilding,
-    gray: GrayBuilding,
-    green: GreenBuilding,
-    magenta: MagentaBuilding,
-    orange: OrangeBuilding,
-    red: RedBuilding,
-    yellow: YellowBuilding,
-}
-
-impl BuildingConfig {
-    pub fn new(black: BlackBuilding, blue: BlueBuilding, gray: GrayBuilding,
-        green: GreenBuilding, magenta: MagentaBuilding, orange: OrangeBuilding,
-        red: RedBuilding, yellow: YellowBuilding
-    ) -> Self {
-        Self {
-            black,
-            blue,
-            gray,
-            green,
-            magenta,
-            orange,
-            red,
-            yellow,
-        }
-    }
-    pub fn black(&self) -> BlackBuilding { self.black }
-    pub fn blue(&self) -> BlueBuilding { self.blue }
-    pub fn gray(&self) -> GrayBuilding { self.gray }
-    pub fn green(&self) -> GreenBuilding { self.green }
-    pub fn magenta(&self) -> MagentaBuilding { self.magenta }
-    pub fn orange(&self) -> OrangeBuilding { self.orange }
-    pub fn red(&self) -> RedBuilding { self.red }
-    pub fn yellow(&self) -> YellowBuilding { self.yellow }
-
-}
-
-// =============================================================================
-pub trait Place {
-    fn to_space(self) -> Space;
-}
-
-impl Place for Resource {
-    fn to_space(self) -> Space {
-        Space::Resource(self)
-    }
-}
-
-impl Place for BuildingType {
-    fn to_space(self) -> Space {
-        Space::Building(self)
-    }
-}
-
-impl Place for (BuildingType, Option<Resource>) {
-    fn to_space(self) -> Space {
-        Space::BuildingWithOptResource(self.0, self.1)
-    }
-}
-
-impl Place for (BuildingType, Resource) {
-    fn to_space(self) -> Space {
-        Space::BuildingWithResource(self.0, self.1)
-    }
-}
-
-impl Place for (BuildingType, Vec<Resource>, usize) {
-    fn to_space(self) -> Space {
-        Space::BuildingWithResources(self.0, self.1, self.2)
-    }
-}
+use crate::building::{BuildingType, Place};
+use crate::space::Space;
 
 // =============================================================================
 pub struct Board {
@@ -272,6 +13,8 @@ pub struct Board {
 
 impl Board {
     pub fn new(rows: usize, cols: usize) -> Self {
+        assert!(rows > 2);
+        assert!(cols > 2);
         let elems = rows * cols;
         let spaces = vec![Space::Empty; elems];
         Self {
@@ -283,11 +26,24 @@ impl Board {
     }
 
     // -------------------------------------------------------------------------
-    fn col(&self, idx: usize) -> usize { idx % self.cols }
+    pub fn cols(&self) -> usize { self.cols }
 
     // -------------------------------------------------------------------------
-    fn row(&self, idx: usize) -> usize { idx / self.cols }
+    pub fn rows(&self) -> usize { self.rows }
 
+    // -------------------------------------------------------------------------
+    pub fn col(&self, idx: usize) -> usize { idx % self.cols }
+
+    // -------------------------------------------------------------------------
+    pub fn row(&self, idx: usize) -> usize { idx / self.cols }
+
+    // -------------------------------------------------------------------------
+    pub fn idx(&self, row: usize, col: usize) -> usize {
+        row * self.cols + col
+    }
+
+    // -------------------------------------------------------------------------
+    // Methods that return a HashSet of indices.
     // -------------------------------------------------------------------------
     pub fn adjacent_idxs(&self, idx: usize) -> HashSet<usize> {
         let mut adjacent_idxs = HashSet::new();
@@ -343,30 +99,71 @@ impl Board {
     }
 
     // -------------------------------------------------------------------------
+    pub fn surrounding_idxs(&self, idx: usize) -> HashSet<usize> {
+        let mut surrounding_idxs = self.adjacent_idxs(idx);
+        surrounding_idxs.extend(self.diagonal_idxs(idx));
+
+        surrounding_idxs
+    }
+
+    // -------------------------------------------------------------------------
     pub fn corner_idxs(&self) -> HashSet<usize> {
-        let corners = HashSet::from([
+        let corner_idxs = HashSet::from([
             0,
             self.cols - 1,
             self.elems - self.cols,
             self.elems - 1,
         ]);
 
-        corners
+        corner_idxs
     }
 
     // -------------------------------------------------------------------------
-    pub fn adjacent_building_types(&self, idx: usize) -> HashSet<BuildingType> {
-        let adjacent_types = self.adjacent_idxs(idx)
-            .into_iter()
-            .fold(HashSet::new(), |mut s, ii| {
-                let space = &self.spaces[ii];
+    pub fn center_idxs(&self) -> HashSet<usize> {
+        assert!(self.rows % 2 == 0);
+        assert!(self.cols % 2 == 0);
+
+        let southeast_center = self.rows / 2 * self.cols + self.cols / 2;
+        let center_idxs = HashSet::from([
+            southeast_center - self.cols - 1,
+            southeast_center - self.cols,
+            southeast_center - 1,
+            southeast_center
+        ]);
+
+        center_idxs
+    }
+
+    // -------------------------------------------------------------------------
+    // Return the set of different building types in the spaces specified by
+    // idxs.
+    fn unique_building_types(&self, idxs: &HashSet<usize>) -> HashSet<BuildingType> {
+        let unique_building_types = idxs.into_iter()
+            .fold(HashSet::new(), |mut s, idx| {
+                let space = &self.spaces[*idx];
                 if let Some(building_type) = space.building_type() {
                     s.insert(building_type);
                 }
                 s
             });
 
-        adjacent_types
+        unique_building_types
+    }
+
+    // -------------------------------------------------------------------------
+    pub fn unique_adjacent_building_types(&self, idx: usize) -> HashSet<BuildingType> {
+        let unique_adjacent_building_types
+            = self.unique_building_types(&self.adjacent_idxs(idx));
+
+        unique_adjacent_building_types
+    }
+
+    // -------------------------------------------------------------------------
+    pub fn unique_surrounding_building_types(&self, idx: usize) -> HashSet<BuildingType> {
+        let unique_surrounding_building_types
+            = self.unique_building_types(&self.surrounding_idxs(idx));
+
+        unique_surrounding_building_types
     }
 
     // -------------------------------------------------------------------------
@@ -395,18 +192,26 @@ impl Board {
     }
 
     // -------------------------------------------------------------------------
-    pub fn contiguous_groups(&self, building_types: &HashSet<BuildingType>) -> Vec<HashSet<usize>> {
+    pub fn contiguous_groups(
+        &self,
+        building_types: &HashSet<BuildingType>,
+    ) -> Vec<HashSet<usize>> {
         let contiguous_groups = self.spaces()
             .iter()
             .enumerate()
-            .fold((Vec::new(), vec![false; self.elems]), |(mut groups, mut visited), (idx, space)| {
+            .fold(
+                (Vec::new(), vec![false; self.elems]),
+                |(mut groups, mut visited), (idx, space)| {
                 if let Some(building_type) = space.building_type() {
                     if building_types.contains(&building_type) && !visited[idx] {
-                        let group = self.contiguous_group(building_types, &mut visited, idx);
+                        let group = self.contiguous_group(
+                            building_types,
+                            &mut visited,
+                            idx
+                        );
                         groups.push(group);
                     }
                 }
-
                 (groups, visited)
             })
             .0;
@@ -432,6 +237,29 @@ impl Board {
     }
 
     // -------------------------------------------------------------------------
+    // Return the number of buildings adjacent to space #idx that are of
+    // a type specified in building_types.
+    pub fn count_adjacent_building_types(
+        &self,
+        idx: usize,
+        building_types: HashSet<BuildingType>,
+    ) -> u32 {
+        let count = self.adjacent_idxs(idx)
+            .iter()
+            .fold(0, |mut n, idx| {
+                let space = &self.spaces()[*idx];
+                if let Some(building_type) = space.building_type() {
+                    if building_types.contains(&building_type) {
+                        n += 1;
+                    }
+                }
+                n
+            });
+
+        count
+    }
+
+    // -------------------------------------------------------------------------
     pub fn place<T>(&mut self, idx: usize, item: T)
     where T: Place
     {
@@ -441,26 +269,6 @@ impl Board {
     // -------------------------------------------------------------------------
     pub fn remove(&mut self, idx: usize) {
         self.spaces[idx] = Space::Empty;
-    }
-
-    // -------------------------------------------------------------------------
-    pub fn print(&self) {
-        for (idx, space) in self.spaces().iter().enumerate() {
-            let symbol = match space {
-                    Space::Building(_)
-                    | Space::BuildingWithOptResource(_, _)
-                    | Space::BuildingWithResource(_, _)
-                    | Space::BuildingWithResources(_, _, _) => "@",
-                    Space::Resource(_) => "o",
-                    Space::Empty => "_",
-            };
-            print!("{symbol}");
-            if self.col(idx) == self.cols - 1 {
-                println!("");
-            } else {
-                print!(" ");
-            }
-        }
     }
 
     // -------------------------------------------------------------------------
@@ -494,6 +302,13 @@ mod tests {
 
     // -------------------------------------------------------------------------
     #[test]
+    #[ignore]
+    fn test_idx() {
+
+    }
+
+    // -------------------------------------------------------------------------
+    #[test]
     fn test_adjacent_idxs() {
         let board = Board::new(7, 5);
         assert_eq!(board.adjacent_idxs(0), HashSet::from([1, 5]));
@@ -517,6 +332,22 @@ mod tests {
 
     // -------------------------------------------------------------------------
     #[test]
+    fn test_surrounding_idxs() {
+
+        let board = Board::new(5, 5);
+        let surrounding_idxs = board.surrounding_idxs(0);
+        assert_eq!(surrounding_idxs, HashSet::from([1, 5, 6]));
+
+
+        let surrounding_idxs = board.surrounding_idxs(10);
+        assert_eq!(surrounding_idxs, HashSet::from([5, 6, 11, 15, 16]));
+
+        let surrounding_idxs = board.surrounding_idxs(18);
+        assert_eq!(surrounding_idxs, HashSet::from([12, 13, 14, 17, 19, 22, 23, 24]));
+    }
+
+    // -------------------------------------------------------------------------
+    #[test]
     fn test_corner_idxs() {
         let board = Board::new(7, 8);
         assert_eq!(board.corner_idxs(), HashSet::from([0, 7, 48, 55]));
@@ -527,7 +358,38 @@ mod tests {
 
     // -------------------------------------------------------------------------
     #[test]
-    fn test_adjacent_building_types() {
+    fn test_center_idxs() {
+        let board = Board::new(4, 4);
+        assert_eq!(board.center_idxs(), HashSet::from([5, 6, 9, 10]));
+
+        let board = Board::new(6, 6);
+        assert_eq!(board.center_idxs(), HashSet::from([14, 15, 20, 21]));
+    }
+
+    // -------------------------------------------------------------------------
+    #[test]
+    fn test_unique_building_types() {
+        let mut board = Board::new(7, 8);
+
+        board.place(0, BuildingType::Blue);
+        let unique_building_types = board.unique_building_types(&HashSet::from([1]));
+        assert!(unique_building_types.is_empty());
+
+        let unique_building_types = board.unique_building_types(&HashSet::from([0]));
+        assert_eq!(unique_building_types, HashSet::from([BuildingType::Blue]));
+
+        board.place(1, BuildingType::Red);
+        let unique_building_types = board.unique_building_types(&HashSet::from([0, 1]));
+        assert_eq!(unique_building_types, HashSet::from([BuildingType::Blue, BuildingType::Red]));
+
+        board.place(6, BuildingType::Green);
+        let unique_building_types = board.unique_building_types(&HashSet::from([1, 5, 9]));
+        assert_eq!(unique_building_types, HashSet::from([BuildingType::Red]));
+    }
+
+    // -------------------------------------------------------------------------
+    #[test]
+    fn test_unique_adjacent_building_types() {
         let mut board = Board::new(4, 8);
         board.place(0, BuildingType::Blue);
         board.place(1, BuildingType::Blue);
@@ -542,23 +404,54 @@ mod tests {
         board.place(24, BuildingType::Magenta);
 
         // Two adjacent building of two different types.
-        assert_eq!(board.adjacent_building_types(0),
+        assert_eq!(board.unique_adjacent_building_types(0),
             HashSet::from([BuildingType::Blue, BuildingType::Orange])
         );
         // Three adjacent buildings of three different types.
-        assert_eq!(board.adjacent_building_types(9),
+        assert_eq!(board.unique_adjacent_building_types(9),
             HashSet::from([BuildingType::Blue, BuildingType::Orange,
                 BuildingType::Gray
             ])
         );
 
         // Three adjacent buildings of two different types.
-        assert_eq!(board.adjacent_building_types(22),
+        assert_eq!(board.unique_adjacent_building_types(22),
             HashSet::from([BuildingType::Blue, BuildingType::Red])
         );
 
         // No adjacent buildings.
-        assert_eq!(board.adjacent_building_types(24), HashSet::from([]));
+        assert_eq!(board.unique_adjacent_building_types(24), HashSet::from([]));
+    }
+
+    // -------------------------------------------------------------------------
+    #[test]
+    fn test_unique_surrounding_building_types() {
+        let mut board = Board::new(5, 6);
+
+        board.place(7, BuildingType::Blue);
+        let adjacent_types = board.unique_surrounding_building_types(7);
+        assert!(adjacent_types.is_empty());
+
+        board.place(6, BuildingType::Red);
+        let adjacent_types = board.unique_surrounding_building_types(7);
+        assert_eq!(adjacent_types, HashSet::from([BuildingType::Red]));
+
+        board.place(8, BuildingType::Red);
+        let adjacent_types = board.unique_surrounding_building_types(7);
+        assert_eq!(adjacent_types, HashSet::from([BuildingType::Red]));
+
+        board.place(1, BuildingType::Blue);
+        let adjacent_types = board.unique_surrounding_building_types(7);
+        assert_eq!(adjacent_types, HashSet::from([BuildingType::Blue, BuildingType::Red]));
+
+        board.place(0, BuildingType::Blue);
+        let adjacent_types = board.unique_surrounding_building_types(7);
+        assert_eq!(adjacent_types, HashSet::from([BuildingType::Blue, BuildingType::Red]));
+
+        board.place(14, BuildingType::Green);
+        let adjacent_types = board.unique_surrounding_building_types(7);
+        assert_eq!(adjacent_types, HashSet::from([BuildingType::Blue, BuildingType::Green, BuildingType::Red]));
+
     }
 
     // -------------------------------------------------------------------------
@@ -574,6 +467,63 @@ mod tests {
         assert_eq!(board.count_building_type(BuildingType::Green), 1);
         assert_eq!(board.count_building_type(BuildingType::Gray), 1);
         assert_eq!(board.count_building_type(BuildingType::Blue), 2);
+    }
+
+    // -------------------------------------------------------------------------
+    #[test]
+    fn test_count_adjacent_building_types() {
+        let mut board = Board::new(4, 4);
+
+        board.place(0, BuildingType::Blue);
+        let count = board.count_adjacent_building_types(0, HashSet::new());
+        assert_eq!(count, 0);
+
+        let count = board.count_adjacent_building_types(1, HashSet::new());
+        assert_eq!(count, 0);
+
+        let count = board.count_adjacent_building_types(
+            1,
+            HashSet::from([BuildingType::Blue]),
+        );
+        assert_eq!(count, 1);
+
+        board.place(1, BuildingType::Blue);
+        board.place(4, BuildingType::Red);
+        let count = board.count_adjacent_building_types(
+            5,
+            HashSet::from([BuildingType::Blue]),
+        );
+        assert_eq!(count, 1);
+
+        let count = board.count_adjacent_building_types(
+            5,
+            HashSet::from([BuildingType::Blue, BuildingType::Red]),
+        );
+        assert_eq!(count, 2);
+
+        board.place(6, BuildingType::Blue);
+        let count = board.count_adjacent_building_types(
+            5,
+            HashSet::from([BuildingType::Blue, BuildingType::Red])
+        );
+        assert_eq!(count, 3);
+
+        board.place(9, BuildingType::Green);
+        let count = board.count_adjacent_building_types(
+            5,
+            HashSet::from([BuildingType::Blue, BuildingType::Red])
+        );
+        assert_eq!(count, 3);
+
+        let count = board.count_adjacent_building_types(
+            5,
+            HashSet::from([
+                BuildingType::Blue,
+                BuildingType::Green,
+                BuildingType::Red
+            ])
+        );
+        assert_eq!(count, 4);
     }
 
     // -------------------------------------------------------------------------
@@ -642,7 +592,5 @@ mod tests {
         let eq = groups.iter().all(|s| ans.contains(&s))
             && ans.iter().all(|s| groups.contains(&s));
         assert!(eq);
-
-
     }
 }

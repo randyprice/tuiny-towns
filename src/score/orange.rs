@@ -1,7 +1,8 @@
 use std::collections::HashSet;
 
-use crate::board::{OrangeBuilding, MagentaBuilding};
-use crate::board::{Board, BuildingConfig, BuildingType};
+use crate::board::Board;
+use crate::building::{BuildingType, MagentaBuilding, OrangeBuilding};
+use crate::building_config::BuildingConfig;
 use crate::score::score_by_adjacency;
 
 // -----------------------------------------------------------------------------
@@ -12,26 +13,34 @@ fn score_abbeys(board: &Board) -> i32 {
         BuildingType:: Yellow,
     ]);
     let score = score_by_adjacency(
-        false, board, BuildingType::Orange, adjacent_types, 3);
+        false,
+        board,
+        BuildingType::Orange,
+        adjacent_types,
+        3
+    );
 
     score
 }
 
 // -----------------------------------------------------------------------------
-fn score_chapels(board: &Board, building_config: &BuildingConfig, fed_idxs: &HashSet<usize>) -> i32 {
+fn score_chapels(
+    board: &Board,
+    building_config: &BuildingConfig,
+    fed_idxs: &HashSet<usize>,
+) -> i32 {
     let score = fed_idxs
         .iter()
-        .fold(0, |mut n, idx| {
+        .fold(0, |n, idx| {
             let space = &board.spaces()[*idx];
-            if let Some(building_type) = space.building_type() {
-                if building_type == BuildingType::Blue {
-                    n += 1;
-                } else if building_type == BuildingType::Magenta
-                    && building_config.magenta() == MagentaBuilding::BarrettCastle {
-                    n += 2;
-                }
+            if space.building_type_eq(BuildingType::Blue) {
+                n + 1
+            } else if space.building_type_eq(BuildingType::Magenta)
+                && building_config.magenta() == MagentaBuilding::BarrettCastle {
+                n + 2
+            } else {
+                n
             }
-            n
         })
         * board.count_building_type(BuildingType::Orange) as i32;
 
@@ -44,37 +53,42 @@ fn score_cloisters(board: &Board) -> i32 {
     let (cloisters, corner_cloisters) = board.spaces()
         .iter()
         .enumerate()
-        .fold((0, 0), |(mut n, mut m), (idx, space)| {
-            if let Some(building_type) = space.building_type() {
-                if building_type == BuildingType::Orange {
-                    n += 1;
-                    if corners.contains(&idx) {
-                        m += 1;
-                    }
+        .fold((0, 0), |(n, m), (idx, space)|
+            if space.building_type_eq(BuildingType::Orange) {
+                if corners.contains(&idx) {
+                    (n + 1, m + 1)
+                } else {
+                    (n + 1, m)
                 }
+            } else {
+                (n, m)
             }
-            (n, m)
-        });
+        );
 
     let score = cloisters * corner_cloisters as i32;
 
     score
 }
 // -----------------------------------------------------------------------------
-fn score_temple(board: &Board, building_config: &BuildingConfig, fed_idxs: &HashSet<usize>, idx: usize) -> bool {
+fn score_temple(
+    board: &Board,
+    building_config: &BuildingConfig,
+    fed_idxs: &HashSet<usize>,
+    idx: usize,
+) -> bool {
     let score = board.adjacent_idxs(idx)
         .intersection(fed_idxs)
-        .fold(0, |mut n, ii| {
+        .fold(0, |n, ii| {
             let space = &board.spaces()[*ii];
-            if let Some(building_type) = space.building_type() {
-                if building_type == BuildingType::Blue {
-                    n += 1;
-                } else if building_type == BuildingType::Magenta
-                    && building_config.magenta() == MagentaBuilding::BarrettCastle {
-                    n += 2;
-                }
+            if space.building_type_eq(BuildingType::Blue) {
+                n + 1
+            } else if space.building_type_eq(BuildingType::Magenta)
+                && building_config.magenta() == MagentaBuilding::BarrettCastle
+            {
+                n + 2
+            } else {
+                n
             }
-            n
         })
         >= 2;
 
@@ -82,25 +96,32 @@ fn score_temple(board: &Board, building_config: &BuildingConfig, fed_idxs: &Hash
 }
 
 // -----------------------------------------------------------------------------
-fn score_temples(board: &Board, building_config: &BuildingConfig, fed_idxs: &HashSet<usize>) -> i32 {
+fn score_temples(
+    board: &Board,
+    building_config: &BuildingConfig,
+    fed_idxs: &HashSet<usize>,
+) -> i32 {
     let score = board.spaces()
         .iter()
         .enumerate()
-        .fold(0, |mut n, (idx, space)| {
-            if let Some(building_type) = space.building_type() {
-                if building_type == BuildingType::Orange
-                    && score_temple(board, building_config, fed_idxs, idx) {
-                    n += 4;
-                }
+        .fold(0, |n, (idx, space)|
+            if space.building_type_eq(BuildingType::Orange)
+            && score_temple(board, building_config, fed_idxs, idx) {
+                n + 4
+            } else {
+                n
             }
-            n
-        });
+        );
 
     score
 }
 
 // -----------------------------------------------------------------------------
-pub fn score_orange(board: &Board, building_config: &BuildingConfig, fed_idxs: &HashSet<usize>) -> i32 {
+pub fn score(
+    board: &Board,
+    building_config: &BuildingConfig,
+    fed_idxs: &HashSet<usize>,
+) -> i32 {
     let score = match building_config.orange() {
         OrangeBuilding::Abbey => score_abbeys(board),
         OrangeBuilding::Chapel => score_chapels(board, building_config, fed_idxs),
@@ -115,7 +136,7 @@ pub fn score_orange(board: &Board, building_config: &BuildingConfig, fed_idxs: &
 #[cfg(test)]
 mod test {
     use super::*;
-    use crate::board::{
+    use crate::building::{
         BlackBuilding, BlueBuilding, GrayBuilding, GreenBuilding,
         MagentaBuilding, OrangeBuilding, RedBuilding, YellowBuilding
     };
@@ -344,5 +365,73 @@ mod test {
 
         fed_idxs.insert(8);
         assert_eq!(score_temples(&board, &building_config, &fed_idxs), 8);
+    }
+
+    // -------------------------------------------------------------------------
+    #[test]
+    fn test_score() {
+        let mut board = Board::new(4, 4);
+        board.place(0, BuildingType::Orange);
+        board.place(1, BuildingType::Blue);
+        board.place(4, BuildingType::Blue);
+        board.place(5, BuildingType::Orange);
+        board.place(3, BuildingType::Orange);
+        board.place(15, BuildingType::Red);
+        board.place(7, BuildingType::Black);
+        board.place(14, BuildingType::Blue);
+
+        let fed_idxs = HashSet::from([1, 4, 14]);
+
+        // Score with abbeys.
+        let building_config = BuildingConfig::new(
+            BlackBuilding::Factory,
+            BlueBuilding::Cottage,
+            GrayBuilding::Well,
+            GreenBuilding::Tavern,
+            MagentaBuilding::SilvaForum,
+            OrangeBuilding::Abbey,
+            RedBuilding::Farm,
+            YellowBuilding::Theater,
+        );
+        assert_eq!(score(&board, &building_config, &fed_idxs), 6);
+
+        // Score with chapels.
+        let building_config = BuildingConfig::new(
+            BlackBuilding::Factory,
+            BlueBuilding::Cottage,
+            GrayBuilding::Well,
+            GreenBuilding::Tavern,
+            MagentaBuilding::SilvaForum,
+            OrangeBuilding::Chapel,
+            RedBuilding::Farm,
+            YellowBuilding::Theater,
+        );
+        assert_eq!(score(&board, &building_config, &fed_idxs), 9);
+
+        // Score with cloisters.
+        let building_config = BuildingConfig::new(
+            BlackBuilding::Factory,
+            BlueBuilding::Cottage,
+            GrayBuilding::Well,
+            GreenBuilding::Tavern,
+            MagentaBuilding::SilvaForum,
+            OrangeBuilding::Cloister,
+            RedBuilding::Farm,
+            YellowBuilding::Theater,
+        );
+        assert_eq!(score(&board, &building_config, &fed_idxs), 6);
+
+        // Score with temples.
+        let building_config = BuildingConfig::new(
+            BlackBuilding::Factory,
+            BlueBuilding::Cottage,
+            GrayBuilding::Well,
+            GreenBuilding::Tavern,
+            MagentaBuilding::SilvaForum,
+            OrangeBuilding::Temple,
+            RedBuilding::Farm,
+            YellowBuilding::Theater,
+        );
+        assert_eq!(score(&board, &building_config, &fed_idxs), 8);
     }
 }
