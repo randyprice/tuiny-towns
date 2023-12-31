@@ -302,9 +302,12 @@ mod tests {
 
     // -------------------------------------------------------------------------
     #[test]
-    #[ignore]
     fn test_idx() {
-
+        let board = Board::new(5, 4);
+        assert_eq!(board.idx(0, 0), 0);
+        assert_eq!(board.idx(1, 0), 4);
+        assert_eq!(board.idx(0, 1), 1);
+        assert_eq!(board.idx(2, 3), 11);
     }
 
     // -------------------------------------------------------------------------

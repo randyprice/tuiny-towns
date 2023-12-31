@@ -79,19 +79,123 @@ pub fn score(
 // =============================================================================
 #[cfg(test)]
 mod test {
+    use super::*;
+    use crate::building::{
+        BlackBuilding, BlueBuilding, GrayBuilding, GreenBuilding,
+        MagentaBuilding, OrangeBuilding, RedBuilding, Resource, YellowBuilding
+    };
 
     // -------------------------------------------------------------------------
     #[test]
-    #[ignore]
     fn test_score_by_adjacency() {
+        let mut board = Board::new(4, 4);
+        assert_eq!(
+            score_by_adjacency(
+                true,
+                &board,
+                BuildingType::Blue,
+                HashSet::from([BuildingType::Orange, BuildingType::Yellow]),
+                2),
+            0,
+        );
+        board.place(0, BuildingType::Blue);
+        assert_eq!(
+            score_by_adjacency(
+                true,
+                &board,
+                BuildingType::Blue,
+                HashSet::from([BuildingType::Orange, BuildingType::Yellow]),
+                2),
+            0,
+        );
+        assert_eq!(
+            score_by_adjacency(
+                false,
+                &board,
+                BuildingType::Blue,
+                HashSet::from([BuildingType::Orange, BuildingType::Yellow]),
+                2),
+            2,
+        );
+
+        board.place(4, BuildingType::Orange);
+        assert_eq!(
+            score_by_adjacency(
+                true,
+                &board,
+                BuildingType::Blue,
+                HashSet::from([BuildingType::Orange, BuildingType::Yellow]),
+                2),
+            2,
+        );
+        assert_eq!(
+            score_by_adjacency(
+                false,
+                &board,
+                BuildingType::Blue,
+                HashSet::from([BuildingType::Orange, BuildingType::Yellow]),
+                2),
+            0,
+        );
+
+        board.place(4, BuildingType::Yellow);
+        assert_eq!(
+            score_by_adjacency(
+                true,
+                &board,
+                BuildingType::Blue,
+                HashSet::from([BuildingType::Orange, BuildingType::Yellow]),
+                2),
+            2,
+        );
+        assert_eq!(
+            score_by_adjacency(
+                false,
+                &board,
+                BuildingType::Blue,
+                HashSet::from([BuildingType::Orange, BuildingType::Yellow]),
+                2),
+            0,
+        );
 
     }
 
     // -------------------------------------------------------------------------
     #[test]
-    #[ignore]
     fn test_score_unused_spaces() {
+        let mut board = Board::new(4, 4);
 
+        // Without Cathedral of Caterina.
+        let building_config = BuildingConfig::new(
+            BlackBuilding::Factory,
+            BlueBuilding::Cottage,
+            GrayBuilding::Millstone,
+            GreenBuilding::Tavern,
+            MagentaBuilding::OpaleyesWatch,
+            OrangeBuilding::Abbey,
+            RedBuilding::Farm,
+            YellowBuilding::Theater,
+        );
+        assert_eq!(score_unused_spaces(&board, &building_config), -16);
+
+        board.place(0, Resource::Brick);
+        assert_eq!(score_unused_spaces(&board, &building_config), -16);
+
+        board.place(1, BuildingType::Blue);
+        assert_eq!(score_unused_spaces(&board, &building_config), -15);
+
+        // With Cathedral of Caterina.
+        let building_config = BuildingConfig::new(
+            BlackBuilding::Factory,
+            BlueBuilding::Cottage,
+            GrayBuilding::Millstone,
+            GreenBuilding::Tavern,
+            MagentaBuilding::CathedralOfCaterina,
+            OrangeBuilding::Abbey,
+            RedBuilding::Farm,
+            YellowBuilding::Theater,
+        );
+        assert_eq!(score_unused_spaces(&board, &building_config), 0);
     }
 
     // -------------------------------------------------------------------------

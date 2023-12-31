@@ -76,6 +76,10 @@ pub fn score(board: &Board, building_config: &BuildingConfig) -> i32 {
 #[cfg(test)]
 mod test {
     use super::*;
+    use crate::building::{
+        BlackBuilding, BlueBuilding, GrayBuilding, GreenBuilding,
+        MagentaBuilding, OrangeBuilding, RedBuilding, YellowBuilding
+    };
 
     // -------------------------------------------------------------------------
     #[test]
@@ -167,8 +171,65 @@ mod test {
 
     // -------------------------------------------------------------------------
     #[test]
-    #[ignore]
     fn test_score() {
+        let mut board = Board::new(4, 4);
+        board.place(0, BuildingType::Gray);
+        board.place(1, BuildingType::Blue);
+        board.place(4, BuildingType::Blue);
+        board.place(15, BuildingType::Red);
+        board.place(14, BuildingType::Gray);
+        board.place(13, BuildingType::Gray);
 
+        // Use fountain.
+        let building_config = BuildingConfig::new(
+            BlackBuilding::Factory,
+            BlueBuilding::Cottage,
+            GrayBuilding::Fountain,
+            GreenBuilding::Tavern,
+            MagentaBuilding::SilvaForum,
+            OrangeBuilding::Abbey,
+            RedBuilding::Farm,
+            YellowBuilding::Theater,
+        );
+        assert_eq!(score(&board, &building_config), 4);
+
+        // Use millstone.
+        let building_config = BuildingConfig::new(
+            BlackBuilding::Factory,
+            BlueBuilding::Cottage,
+            GrayBuilding::Millstone,
+            GreenBuilding::Tavern,
+            MagentaBuilding::SilvaForum,
+            OrangeBuilding::Abbey,
+            RedBuilding::Farm,
+            YellowBuilding::Theater,
+        );
+        assert_eq!(score(&board, &building_config), 2);
+
+        // Use shed.
+        let building_config = BuildingConfig::new(
+            BlackBuilding::Factory,
+            BlueBuilding::Cottage,
+            GrayBuilding::Shed,
+            GreenBuilding::Tavern,
+            MagentaBuilding::SilvaForum,
+            OrangeBuilding::Abbey,
+            RedBuilding::Farm,
+            YellowBuilding::Theater,
+        );
+        assert_eq!(score(&board, &building_config), 3);
+
+        // Use well.
+        let building_config = BuildingConfig::new(
+            BlackBuilding::Factory,
+            BlueBuilding::Cottage,
+            GrayBuilding::Millstone,
+            GreenBuilding::Tavern,
+            MagentaBuilding::SilvaForum,
+            OrangeBuilding::Abbey,
+            RedBuilding::Farm,
+            YellowBuilding::Theater,
+        );
+        assert_eq!(score(&board, &building_config), 2);
     }
 }

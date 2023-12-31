@@ -76,7 +76,8 @@ fn score_tailors(board: &Board) -> i32 {
 
 // -----------------------------------------------------------------------------
 fn score_theaters(board: &Board) -> i32 {
-    let (unique_building_types_in_row, unique_building_types_in_col) = board.spaces()
+    let (unique_building_types_in_row, unique_building_types_in_col)
+        = board.spaces()
         .iter()
         .enumerate()
         .fold(
@@ -134,7 +135,10 @@ pub fn score(board: &Board, building_config: &BuildingConfig) -> i32 {
 #[cfg(test)]
 mod test {
     use super::*;
-
+    use crate::building::{
+        BlackBuilding, BlueBuilding, GrayBuilding, GreenBuilding,
+        MagentaBuilding, OrangeBuilding, RedBuilding, YellowBuilding
+    };
 
     // -------------------------------------------------------------------------
     #[test]
@@ -259,8 +263,64 @@ mod test {
 
     // -------------------------------------------------------------------------
     #[test]
-    #[ignore]
     fn test_score() {
+        let mut board = Board::new(4, 4);
+        board.place(5, BuildingType::Yellow);
+        board.place(9, BuildingType::Yellow);
+        board.place(1, BuildingType::Green);
+        board.place(13, BuildingType::Red);
+        board.place(4, BuildingType::Black);
 
+        // Use bakery.
+        let building_config = BuildingConfig::new(
+            BlackBuilding::Factory,
+            BlueBuilding::Cottage,
+            GrayBuilding::Fountain,
+            GreenBuilding::Tavern,
+            MagentaBuilding::SilvaForum,
+            OrangeBuilding::Abbey,
+            RedBuilding::Farm,
+            YellowBuilding::Bakery,
+        );
+        assert_eq!(score(&board, &building_config), 6);
+
+        // Use market.
+        let building_config = BuildingConfig::new(
+            BlackBuilding::Factory,
+            BlueBuilding::Cottage,
+            GrayBuilding::Fountain,
+            GreenBuilding::Tavern,
+            MagentaBuilding::SilvaForum,
+            OrangeBuilding::Abbey,
+            RedBuilding::Farm,
+            YellowBuilding::Market,
+        );
+        assert_eq!(score(&board, &building_config), 4);
+
+        // Use tailor.
+        let building_config = BuildingConfig::new(
+            BlackBuilding::Factory,
+            BlueBuilding::Cottage,
+            GrayBuilding::Fountain,
+            GreenBuilding::Tavern,
+            MagentaBuilding::SilvaForum,
+            OrangeBuilding::Abbey,
+            RedBuilding::Farm,
+            YellowBuilding::Tailor,
+        );
+        assert_eq!(score(&board, &building_config), 6);
+
+        // Use theater.
+        let building_config = BuildingConfig::new(
+            BlackBuilding::Factory,
+            BlueBuilding::Cottage,
+            GrayBuilding::Fountain,
+            GreenBuilding::Tavern,
+            MagentaBuilding::SilvaForum,
+            OrangeBuilding::Abbey,
+            RedBuilding::Farm,
+            YellowBuilding::Theater,
+        );
+        assert_eq!(score(&board, &building_config), 5);
     }
 }
