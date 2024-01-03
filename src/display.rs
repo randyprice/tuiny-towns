@@ -3,12 +3,12 @@ use std::collections::HashMap;
 use colored::{ColoredString, Colorize};
 
 use crate::board::Board;
-use crate::building::{BuildingType, Resource, BlackBuilding, BlueBuilding,
+use crate::building::{BuildingType, BlackBuilding, BlueBuilding,
     GrayBuilding, GreenBuilding, MagentaBuilding, OrangeBuilding, RedBuilding,
     YellowBuilding};
 use crate::building_config::BuildingConfig;
 use crate::space::Space;
-use crate::score::{ScoreCard, score};
+use crate::score::ScoreCard;
 
 // =============================================================================
 impl BlackBuilding {
@@ -119,12 +119,12 @@ impl RedBuilding {
         }
     }
 
-    fn to_plural_string(&self) -> String {
-        match self {
-            RedBuilding::Granary => String::from("Granaries"),
-            _ => format!("{}s", self.to_string()),
-        }
-    }
+    // fn to_plural_string(&self) -> String {
+    //     match self {
+    //         RedBuilding::Granary => String::from("Granaries"),
+    //         _ => format!("{}s", self.to_string()),
+    //     }
+    // }
 }
 
 impl YellowBuilding {
@@ -161,7 +161,7 @@ impl Space {
                 match building_type {
                     BuildingType::Orange => symbol.truecolor(230, 131, 2),
                     BuildingType::Blue => symbol.blue(),
-                    BuildingType::Black => symbol.black(),
+                    BuildingType::Black => symbol.truecolor(10, 10, 10),
                     BuildingType::Red => symbol.red(),
                     BuildingType::Green => symbol.green(),
                     BuildingType::Yellow => symbol.yellow(),
@@ -176,11 +176,12 @@ impl Space {
                     String::from(".")
                 };
                 match resource {
-                    Resource::Brick => symbol.red(),
-                    Resource::Glass => symbol.blue(),
-                    Resource::Stone => symbol.truecolor(60, 60, 60),
-                    Resource::Wheat => symbol.yellow(),
-                    Resource::Wood => symbol.truecolor(60, 50, 5),
+                    _ => symbol.white(),
+                    // Resource::Brick => symbol.red(),
+                    // Resource::Glass => symbol.blue(),
+                    // Resource::Stone => symbol.truecolor(60, 60, 60),
+                    // Resource::Wheat => symbol.yellow(),
+                    // Resource::Wood => symbol.truecolor(60, 50, 5),
                 }
             }
             Space::Empty => ColoredString::from(" "),

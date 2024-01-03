@@ -22,7 +22,7 @@ fn main() {
         GrayBuilding::Well,
         GreenBuilding::Almshouse,
         MagentaBuilding::SilvaForum,
-        OrangeBuilding::Cloister,
+        OrangeBuilding::Abbey,
         RedBuilding::Orchard,
         YellowBuilding::Theater,
     );
@@ -42,6 +42,7 @@ fn main() {
     board.place(4, BuildingType::Green);
     board.place(5, BuildingType::Gray);
     board.place(7, BuildingType::Magenta);
+    board.place(12, (BuildingType::Black, Resource::Glass));
     board.place(15, Resource::Wood);
 
 
