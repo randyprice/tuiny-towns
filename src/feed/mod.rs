@@ -50,9 +50,9 @@ fn best_fed_idxs(
 ) -> HashSet<usize> {
     let best_fed_idxs = permutations.iter()
         .fold((HashSet::new(), 0), |(best, max), permutation| {
-            let score = blue::score(board, building_config, permutation)
-                + orange::score(board, building_config, permutation)
-                + magenta::score(board, building_config, permutation);
+            let score = blue::score(board, building_config, permutation).values().sum::<i32>()
+                + orange::score(board, building_config, permutation).values().sum::<i32>()
+                + magenta::score(board, building_config, permutation).values().sum::<i32>() as i32;
             if score > max {
                 (permutation.clone(), score)
             } else {

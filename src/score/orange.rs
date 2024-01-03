@@ -1,26 +1,25 @@
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 
 use crate::board::Board;
 use crate::building::{BuildingType, MagentaBuilding, OrangeBuilding};
 use crate::building_config::BuildingConfig;
-use crate::score::score_by_adjacency;
+use crate::score::{score_if_not_adjacent_to, score_per_each};
 
 // -----------------------------------------------------------------------------
-fn score_abbeys(board: &Board) -> i32 {
+fn score_abbeys(board: &Board) -> HashMap<usize, i32> {
     let adjacent_types = HashSet::from([
         BuildingType::Black,
         BuildingType::Green,
         BuildingType:: Yellow,
     ]);
-    let score = score_by_adjacency(
-        false,
+    let scores = score_if_not_adjacent_to(
         board,
         BuildingType::Orange,
-        adjacent_types,
-        3
+        &adjacent_types,
+        3,
     );
 
-    score
+    scores
 }
 
 // -----------------------------------------------------------------------------
@@ -28,8 +27,8 @@ fn score_chapels(
     board: &Board,
     building_config: &BuildingConfig,
     fed_idxs: &HashSet<usize>,
-) -> i32 {
-    let score = fed_idxs
+) -> HashMap<usize, i32> {
+    let points = fed_idxs
         .iter()
         .fold(0, |n, idx| {
             let space = &board.spaces()[*idx];
@@ -41,33 +40,29 @@ fn score_chapels(
             } else {
                 n
             }
-        })
-        * board.count_building_type(BuildingType::Orange) as i32;
+        });
 
-    score
+    let scores = score_per_each(board, BuildingType::Orange, points);
+
+    scores
 }
 
 // -----------------------------------------------------------------------------
-fn score_cloisters(board: &Board) -> i32 {
-    let corners = board.corner_idxs();
-    let (cloisters, corner_cloisters) = board.spaces()
-        .iter()
-        .enumerate()
-        .fold((0, 0), |(n, m), (idx, space)|
+fn score_cloisters(board: &Board) -> HashMap<usize, i32> {
+    let points = board.corner_idxs()
+        .into_iter()
+        .fold(0, |n, idx| {
+            let space = &board.spaces()[idx];
             if space.building_type_eq(BuildingType::Orange) {
-                if corners.contains(&idx) {
-                    (n + 1, m + 1)
-                } else {
-                    (n + 1, m)
-                }
+                n + 1
             } else {
-                (n, m)
+                n
             }
-        );
+        });
 
-    let score = cloisters * corner_cloisters as i32;
+    let scores = score_per_each(board, BuildingType::Orange, points);
 
-    score
+    scores
 }
 // -----------------------------------------------------------------------------
 fn score_temple(
@@ -100,20 +95,22 @@ fn score_temples(
     board: &Board,
     building_config: &BuildingConfig,
     fed_idxs: &HashSet<usize>,
-) -> i32 {
-    let score = board.spaces()
+) -> HashMap<usize, i32> {
+    let scores = board.spaces()
         .iter()
         .enumerate()
-        .fold(0, |n, (idx, space)|
-            if space.building_type_eq(BuildingType::Orange)
-            && score_temple(board, building_config, fed_idxs, idx) {
-                n + 4
-            } else {
-                n
+        .fold(HashMap::new(), |mut m, (idx, space)| {
+            if space.building_type_eq(BuildingType::Orange) {
+                if score_temple(board, building_config, fed_idxs, idx) {
+                    m.insert(idx, 4);
+                } else {
+                    m.insert(idx, 0);
+                }
             }
-        );
+            m
+        });
 
-    score
+    scores
 }
 
 // -----------------------------------------------------------------------------
@@ -121,15 +118,15 @@ pub fn score(
     board: &Board,
     building_config: &BuildingConfig,
     fed_idxs: &HashSet<usize>,
-) -> i32 {
-    let score = match building_config.orange() {
+) -> HashMap<usize, i32> {
+    let scores = match building_config.orange() {
         OrangeBuilding::Abbey => score_abbeys(board),
         OrangeBuilding::Chapel => score_chapels(board, building_config, fed_idxs),
         OrangeBuilding::Cloister => score_cloisters(board),
         OrangeBuilding::Temple => score_temples(board, building_config, fed_idxs),
     };
 
-    score
+    scores
 }
 
 // =============================================================================
@@ -162,13 +159,15 @@ mod test {
         board.place(9, BuildingType::Magenta);
         board.place(12, BuildingType::Gray);
 
-        assert_eq!(score_abbeys(&board), 6);
+        let ans = HashMap::from([(0, 0), (3, 3), (4, 0), (7, 0), (8, 3)]);
+        assert_eq!(score_abbeys(&board), ans);
     }
 
     // -------------------------------------------------------------------------
     #[test]
     fn test_score_chapels() {
         let mut board = Board::new(4, 4);
+        // Without Barrett Castle.
         let building_config = BuildingConfig::new(
             BlackBuilding::Factory,
             BlueBuilding::Cottage,
@@ -182,13 +181,15 @@ mod test {
         let mut fed_idxs = HashSet::new();
 
         board.place(0, BuildingType::Orange);
-        assert_eq!(score_chapels(&board, &building_config, &fed_idxs), 0);
+        let ans = HashMap::from([(0, 0)]);
+        assert_eq!(score_chapels(&board, &building_config, &fed_idxs), ans);
 
         board.place(1, BuildingType::Blue);
-        assert_eq!(score_chapels(&board, &building_config, &fed_idxs), 0);
+        assert_eq!(score_chapels(&board, &building_config, &fed_idxs), ans);
 
         fed_idxs.insert(1);
-        assert_eq!(score_chapels(&board, &building_config, &fed_idxs), 1);
+        let ans = HashMap::from([(0, 1)]);
+        assert_eq!(score_chapels(&board, &building_config, &fed_idxs), ans);
 
         board.place(2, BuildingType::Blue);
         board.place(3, BuildingType::Blue);
@@ -196,11 +197,14 @@ mod test {
         fed_idxs.insert(2);
         fed_idxs.insert(3);
         fed_idxs.insert(4);
-        assert_eq!(score_chapels(&board, &building_config, &fed_idxs), 4);
+        let ans = HashMap::from([(0, 4)]);
+        assert_eq!(score_chapels(&board, &building_config, &fed_idxs), ans);
 
         board.place(5, BuildingType::Orange);
-        assert_eq!(score_chapels(&board, &building_config, &fed_idxs), 8);
+        let ans = HashMap::from([(0, 4), (5, 4)]);
+        assert_eq!(score_chapels(&board, &building_config, &fed_idxs), ans);
 
+        // With Barrett Castle.
         let building_config = BuildingConfig::new(
             BlackBuilding::Factory,
             BlueBuilding::Cottage,
@@ -211,13 +215,14 @@ mod test {
             RedBuilding::Farm,
             YellowBuilding::Theater,
         );
-        assert_eq!(score_chapels(&board, &building_config, &fed_idxs), 8);
+        assert_eq!(score_chapels(&board, &building_config, &fed_idxs), ans);
 
         board.place(6, BuildingType::Magenta);
-        assert_eq!(score_chapels(&board, &building_config, &fed_idxs), 8);
+        assert_eq!(score_chapels(&board, &building_config, &fed_idxs), ans);
 
         fed_idxs.insert(6);
-        assert_eq!(score_chapels(&board, &building_config, &fed_idxs), 12);
+        let ans = HashMap::from([(0, 6), (5, 6)]);
+        assert_eq!(score_chapels(&board, &building_config, &fed_idxs), ans);
     }
 
     // -------------------------------------------------------------------------
@@ -226,27 +231,34 @@ mod test {
         let mut board = Board::new(4, 4);
 
         board.place(1, BuildingType::Orange);
-        assert_eq!(score_cloisters(&board), 0);
+        let ans = HashMap::from([(1, 0)]);
+        assert_eq!(score_cloisters(&board), ans);
 
         board.remove(1);
         board.place(0, BuildingType::Orange);
-        assert_eq!(score_cloisters(&board), 1);
+        let ans = HashMap::from([(0, 1)]);
+        assert_eq!(score_cloisters(&board), ans);
 
         board.place(1, BuildingType::Orange);
-        assert_eq!(score_cloisters(&board), 2);
+        let ans = HashMap::from([(0, 1), (1, 1)]);
+        assert_eq!(score_cloisters(&board), ans);
 
         board.place(3, BuildingType::Orange);
-        assert_eq!(score_cloisters(&board), 6);
+        let ans = HashMap::from([(0, 2), (1, 2), (3, 2)]);
+        assert_eq!(score_cloisters(&board), ans);
 
         board.place(12, BuildingType::Orange);
-        assert_eq!(score_cloisters(&board), 12);
+        let ans = HashMap::from([(0, 3), (1, 3), (3, 3), (12, 3)]);
+        assert_eq!(score_cloisters(&board), ans);
 
         board.remove(1);
         board.place(15, BuildingType::Orange);
-        assert_eq!(score_cloisters(&board), 16);
+        let ans = HashMap::from([(0, 4), (3, 4), (12, 4), (15, 4)]);
+        assert_eq!(score_cloisters(&board), ans);
 
         board.place(14, BuildingType::Orange);
-        assert_eq!(score_cloisters(&board), 20);
+        let ans = HashMap::from([(0, 4), (3, 4), (12, 4), (14, 4), (15, 4)]);
+        assert_eq!(score_cloisters(&board), ans);
     }
 
     // -------------------------------------------------------------------------
@@ -325,25 +337,27 @@ mod test {
         );
         let mut fed_idxs: HashSet<usize> = HashSet::new();
         board.place(0, BuildingType::Orange);
-        assert_eq!(score_temples(&board, &building_config, &fed_idxs), 0);
+        let ans = HashMap::from([(0, 0)]);
+        assert_eq!(score_temples(&board, &building_config, &fed_idxs), ans);
 
         board.place(1, BuildingType::Blue);
-        assert_eq!(score_temples(&board, &building_config, &fed_idxs), 0);
+        assert_eq!(score_temples(&board, &building_config, &fed_idxs), ans);
 
         fed_idxs.insert(1);
-        assert_eq!(score_temples(&board, &building_config, &fed_idxs), 0);
+        assert_eq!(score_temples(&board, &building_config, &fed_idxs), ans);
 
         board.place(2, BuildingType::Blue);
-        assert_eq!(score_temples(&board, &building_config, &fed_idxs), 0);
+        assert_eq!(score_temples(&board, &building_config, &fed_idxs), ans);
 
         fed_idxs.insert(2);
-        assert_eq!(score_temples(&board, &building_config, &fed_idxs), 0);
+        assert_eq!(score_temples(&board, &building_config, &fed_idxs), ans);
 
         board.place(4, BuildingType::Blue);
-        assert_eq!(score_temples(&board, &building_config, &fed_idxs), 0);
+        assert_eq!(score_temples(&board, &building_config, &fed_idxs), ans);
 
         fed_idxs.insert(4);
-        assert_eq!(score_temples(&board, &building_config, &fed_idxs), 4);
+        let ans = HashMap::from([(0, 4)]);
+        assert_eq!(score_temples(&board, &building_config, &fed_idxs), ans);
 
         // With Barrett Castle.
         let building_config = BuildingConfig::new(
@@ -356,15 +370,16 @@ mod test {
             RedBuilding::Farm,
             YellowBuilding::Theater,
         );
-
         board.place(12, BuildingType::Orange);
-        assert_eq!(score_temples(&board, &building_config, &fed_idxs), 4);
+        let ans = HashMap::from([(0, 4), (12, 0)]);
+        assert_eq!(score_temples(&board, &building_config, &fed_idxs), ans);
 
         board.place(8, BuildingType::Magenta);
-        assert_eq!(score_temples(&board, &building_config, &fed_idxs), 4);
+        assert_eq!(score_temples(&board, &building_config, &fed_idxs), ans);
 
         fed_idxs.insert(8);
-        assert_eq!(score_temples(&board, &building_config, &fed_idxs), 8);
+        let ans = HashMap::from([(0, 4), (12, 4)]);
+        assert_eq!(score_temples(&board, &building_config, &fed_idxs), ans);
     }
 
     // -------------------------------------------------------------------------
@@ -379,7 +394,6 @@ mod test {
         board.place(15, BuildingType::Red);
         board.place(7, BuildingType::Black);
         board.place(14, BuildingType::Blue);
-
         let fed_idxs = HashSet::from([1, 4, 14]);
 
         // Score with abbeys.
@@ -393,7 +407,8 @@ mod test {
             RedBuilding::Farm,
             YellowBuilding::Theater,
         );
-        assert_eq!(score(&board, &building_config, &fed_idxs), 6);
+        let ans = HashMap::from([(0, 3), (3, 0), (5, 3)]);
+        assert_eq!(score(&board, &building_config, &fed_idxs), ans);
 
         // Score with chapels.
         let building_config = BuildingConfig::new(
@@ -406,7 +421,8 @@ mod test {
             RedBuilding::Farm,
             YellowBuilding::Theater,
         );
-        assert_eq!(score(&board, &building_config, &fed_idxs), 9);
+        let ans = HashMap::from([(0, 3), (3, 3), (5, 3)]);
+        assert_eq!(score(&board, &building_config, &fed_idxs), ans);
 
         // Score with cloisters.
         let building_config = BuildingConfig::new(
@@ -419,7 +435,8 @@ mod test {
             RedBuilding::Farm,
             YellowBuilding::Theater,
         );
-        assert_eq!(score(&board, &building_config, &fed_idxs), 6);
+        let ans = HashMap::from([(0, 2), (3, 2), (5, 2)]);
+        assert_eq!(score(&board, &building_config, &fed_idxs), ans);
 
         // Score with temples.
         let building_config = BuildingConfig::new(
@@ -432,6 +449,7 @@ mod test {
             RedBuilding::Farm,
             YellowBuilding::Theater,
         );
-        assert_eq!(score(&board, &building_config, &fed_idxs), 8);
+        let ans = HashMap::from([(0, 4), (3, 0), (5, 4)]);
+        assert_eq!(score(&board, &building_config, &fed_idxs), ans);
     }
 }

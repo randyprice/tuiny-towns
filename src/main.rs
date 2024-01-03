@@ -20,10 +20,10 @@ fn main() {
         BlackBuilding::Factory,
         BlueBuilding::Cottage,
         GrayBuilding::Well,
-        GreenBuilding::Tavern,
+        GreenBuilding::Almshouse,
         MagentaBuilding::SilvaForum,
-        OrangeBuilding::Chapel,
-        RedBuilding::Farm,
+        OrangeBuilding::Cloister,
+        RedBuilding::Orchard,
         YellowBuilding::Theater,
     );
 
@@ -37,7 +37,15 @@ fn main() {
     for idx in 10..16 {
         board.place(idx, BuildingType::Orange);
     }
-    board.print();
-    score(&board, &building_config, &Board::new(4, 4));
+    board.place(0, BuildingType::Yellow);
+    board.place(3, BuildingType::Green);
+    board.place(4, BuildingType::Green);
+    board.place(5, BuildingType::Gray);
+    board.place(7, BuildingType::Magenta);
+    board.place(15, Resource::Wood);
+
+
+    let score_card = score(&board, &building_config, None);
+    board.print_scores(&score_card, &building_config);
 
 }
