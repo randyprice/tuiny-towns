@@ -221,10 +221,13 @@ fn score_per_each(
     building_type: BuildingType,
     points: i32
 ) -> HashMap<usize, i32> {
-    let scores = board.idxs_of_building_type(building_type)
-        .into_iter()
-        .fold(HashMap::new(), |mut m, idx| {
-            m.insert(idx, points);
+    let scores = board.spaces()
+        .iter()
+        .enumerate()
+        .fold(HashMap::new(), |mut m, (idx, space)| {
+            if space.building_type_eq(building_type) {
+                m.insert(idx, points);
+            }
             m
         });
 

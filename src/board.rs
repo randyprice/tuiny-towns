@@ -278,26 +278,6 @@ impl Board {
     }
 
     // -------------------------------------------------------------------------
-    // Return the set of indices of spaces that contain a building of type
-    // building_type.
-    pub fn idxs_of_building_type(
-        &self,
-        building_type: BuildingType,
-    ) -> HashSet<usize> {
-        let idxs = self.spaces
-            .iter()
-            .enumerate()
-            .fold(HashSet::new(), |mut s, (idx, space)| {
-                if space.building_type_eq(building_type) {
-                    s.insert(idx);
-                }
-                s
-            });
-
-        idxs
-    }
-
-    // -------------------------------------------------------------------------
     pub fn place<T>(&mut self, idx: usize, item: T)
     where T: Place
     {
@@ -635,10 +615,4 @@ mod tests {
         assert!(eq);
     }
 
-    // -------------------------------------------------------------------------
-    #[test]
-    #[ignore]
-    fn test_idxs_of_building_type() {
-
-    }
 }
