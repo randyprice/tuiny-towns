@@ -5,7 +5,7 @@ use strum::IntoEnumIterator;
 use crate::board::Board;
 use crate::building::{BuildingType, MagentaBuilding};
 use crate::building_config::BuildingConfig;
-use crate::score::{score_if_in_set, score_per_each};
+use crate::score::{score_if_in_idx_set, score_per_each};
 
 // -----------------------------------------------------------------------------
 fn score_archive_of_the_second_age(board: &Board) -> HashMap<usize, i32> {
@@ -92,7 +92,7 @@ pub fn score(
             score_archive_of_the_second_age(board)
         }
         MagentaBuilding::BarrettCastle => {
-            score_if_in_set(board, fed_idxs, BuildingType::Magenta, 5)
+            score_if_in_idx_set(board, fed_idxs, BuildingType::Magenta, 5)
         }
         MagentaBuilding::CathedralOfCaterina => {
             score_per_each(board, BuildingType::Magenta, 2)

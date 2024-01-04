@@ -3,7 +3,7 @@ use std::collections::{HashMap, HashSet};
 use crate::board::Board;
 use crate::building::{BuildingType, GrayBuilding};
 use crate::building_config::BuildingConfig;
-use crate::score::{score_if_adjacent_to, score_if_in_set, score_per_each};
+use crate::score::{score_if_adjacent_to, score_if_in_idx_set, score_per_each};
 
 // -----------------------------------------------------------------------------
 fn score_fountains(board: &Board) -> HashMap<usize, i32> {
@@ -14,7 +14,7 @@ fn score_fountains(board: &Board) -> HashMap<usize, i32> {
             .flatten()
             .collect();
 
-    let scores = score_if_in_set(
+    let scores = score_if_in_idx_set(
         board,
         &scoring_idxs,
         BuildingType::Gray,

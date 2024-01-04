@@ -3,7 +3,7 @@ use std::collections::{HashMap, HashSet};
 use crate::board::Board;
 use crate::building::{BlueBuilding, BuildingType, MagentaBuilding};
 use crate::building_config::BuildingConfig;
-use crate::score::{score_if_in_set, score_per_each};
+use crate::score::{score_if_in_idx_set, score_per_each};
 
 // -----------------------------------------------------------------------------
 fn score_cottages(
@@ -16,7 +16,7 @@ fn score_cottages(
         && board.count_building_type(BuildingType::Magenta) > 0 {
             score_per_each(board, BuildingType::Blue, 3)
         } else {
-            score_if_in_set(board, fed_idxs, BuildingType::Blue, 3)
+            score_if_in_idx_set(board, fed_idxs, BuildingType::Blue, 3)
         };
 
     scores
