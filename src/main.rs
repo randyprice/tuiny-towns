@@ -17,34 +17,37 @@ pub mod utils;
 
 fn main() {
     let building_config = BuildingConfig::new(
-        BlackBuilding::Factory,
+        BlackBuilding::Warehouse,
         BlueBuilding::Cottage,
         GrayBuilding::Well,
         GreenBuilding::Almshouse,
         MagentaBuilding::SilvaForum,
-        OrangeBuilding::Abbey,
-        RedBuilding::Orchard,
-        YellowBuilding::Theater,
+        OrangeBuilding::Cloister,
+        RedBuilding::Granary,
+        YellowBuilding::Tailor,
     );
 
     let mut board = Board::new(4, 4);
-    for idx in 0..2 {
-        board.place(idx, BuildingType::Red);
-    }
-    for idx in 2..10 {
-        board.place(idx, BuildingType::Blue);
-    }
-    for idx in 10..16 {
-        board.place(idx, BuildingType::Orange);
-    }
-    board.place(0, BuildingType::Yellow);
-    board.place(3, BuildingType::Green);
-    board.place(4, BuildingType::Green);
-    board.place(5, BuildingType::Gray);
-    board.place(7, BuildingType::Magenta);
-    board.place(12, (BuildingType::Black, Resource::Glass));
-    board.place(15, Resource::Wood);
 
+    board.place(0, BuildingType::Orange);
+    board.place(1, BuildingType::Blue);
+    board.place(2, BuildingType::Orange);
+    board.place(3, BuildingType::Orange);
+
+    board.place(4, BuildingType::Blue);
+    board.place(5, BuildingType::Red);
+    board.place(6, BuildingType::Green);
+    board.place(7, BuildingType::Blue);
+
+    board.place(8, BuildingType::Orange);
+    board.place(9, BuildingType::Yellow);
+    board.place(10, BuildingType::Yellow);
+    board.place(11, BuildingType::Gray);
+
+    board.place(12, BuildingType::Orange);
+    board.place(13, (BuildingType::Black, vec![Resource::Glass, Resource::Brick], 3));
+    board.place(14, BuildingType::Magenta);
+    board.place(15, Resource::Wood);
 
     let score_card = score(&board, &building_config, None);
     board.print_scores(&score_card, &building_config);

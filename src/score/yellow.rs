@@ -23,33 +23,22 @@ fn score_bakeries(board: &Board) -> HashMap<usize, i32> {
 // -----------------------------------------------------------------------------
 fn score_markets(board: &Board) -> HashMap<usize, i32> {
     // Count the number of markets in each row and column.
-    let (markets_in_row, markets_in_col) = board.spaces()
-        .iter()
-        .enumerate()
-        .fold(
-            (HashMap::new(), HashMap::new()),
-            |(mut rows, mut cols), (idx, space)| {
-                if space.building_type_eq(BuildingType::Yellow) {
-                    *rows.entry(board.row(idx)).or_insert(0) += 1;
-                    *cols.entry(board.col(idx)).or_insert(0) += 1;
-                }
-                (rows, cols)
-            }
-        );
+    let (markets_per_row, markets_per_col) =
+        board.count_building_type_per_row_and_col(BuildingType::Yellow);
 
     // Score each market.
     let scores = board.spaces()
         .iter()
         .enumerate()
-        .fold(HashMap::new(), |mut m, (idx, space)| {
+        .fold(HashMap::new(), |mut scores, (idx, space)| {
             if space.building_type_eq(BuildingType::Yellow) {
                 let points = cmp::max(
-                    markets_in_row.get(&board.row(idx)).copied().unwrap_or(0),
-                    markets_in_col.get(&board.col(idx)).copied().unwrap_or(0),
-                );
-                m.insert(idx, points);
+                    markets_per_row.get(&board.row(idx)).copied().unwrap_or(0),
+                    markets_per_col.get(&board.col(idx)).copied().unwrap_or(0),
+                ) as i32;
+                scores.insert(idx, points);
             }
-            m
+            scores
         });
 
     scores

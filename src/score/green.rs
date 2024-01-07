@@ -44,19 +44,8 @@ fn score_feast_halls(board: &Board, other: &Board) -> HashMap<usize, i32> {
 // -----------------------------------------------------------------------------
 fn score_inns(board: &Board) -> HashMap<usize, i32> {
     // Count number of inns in each row and column.
-    let (inns_in_row, inns_in_col) = board.spaces()
-        .iter()
-        .enumerate()
-        .fold(
-            (HashMap::new(), HashMap::new()),
-            |(mut row, mut col), (idx, space)| {
-                if space.building_type_eq(BuildingType::Green) {
-                    *row.entry(board.row(idx)).or_insert(0) += 1;
-                    *col.entry(board.col(idx)).or_insert(0) += 1;
-                }
-                (row, col)
-            }
-        );
+    let (inns_in_row, inns_in_col) =
+        board.count_building_type_per_row_and_col(BuildingType::Green);
 
     // Score only the inns that are alone in their column and row.
     let scores = board.spaces()

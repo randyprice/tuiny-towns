@@ -22,24 +22,16 @@ fn feedable_permutations(
     let permutations = board.contiguous_groups(&building_types)
         .into_iter()
         .combinations(board.count_building_type(BuildingType::Red) as usize)
-        .collect_vec()
-        .iter()
-        .fold(Vec::new(), |mut perms, groups| {
-            // Create one permutation by contcatenating sets of contiguous
-            // groups.
+        .fold(Vec::new(), |mut permutations, groups| {
+            // A single permutation consists of N contiguous groups of feedable
+            // buildings, where N is the number of greenhouses on the board.
             let permutation = groups.iter()
-                .fold(HashSet::new(), |mut s, group| {
-                    s.extend(group);
-                    s
-                    // // Add all indices from one contiguous group to the HashSet.
-                    // group.iter()
-                    //     .fold(s, |mut partial_set, idx| {
-                    //         partial_set.insert(*idx);
-                    //         partial_set
-                    //     })
+                .fold(HashSet::new(), |mut permutation, group| {
+                    permutation.extend(group);
+                    permutation
                 });
-            perms.push(permutation);
-            perms
+            permutations.push(permutation);
+            permutations
         });
 
     permutations
@@ -65,7 +57,6 @@ mod tests {
 
     // -------------------------------------------------------------------------
     #[test]
-    #[ignore]
     fn test_feedable_permutations() {
         // Without Barrett Castle.
         let building_config = BuildingConfig::new(
@@ -135,13 +126,108 @@ mod tests {
         let ans = vec![HashSet::from([0, 1, 2, 3, 7]), HashSet::from([12, 13])];
         assert!(vec_hashset_eq(&permutations, &ans));
 
-        //TODO add second greenhouse.
+        // Add second greenhouse - both contiguous groups can be fed now, so
+        // they form one permutation.
+        board.place(14, BuildingType::Red);
+        let permutations = feedable_permutations(&board, &building_config);
+        let ans = vec![HashSet::from([0, 1, 2, 3, 7, 12, 13])];
+        println!("permutations: {:?}", permutations);
+        println!("ans: {:?}", ans);
+
+        assert!(vec_hashset_eq(&permutations, &ans));
+
     }
 
     // -------------------------------------------------------------------------
     #[test]
-    #[ignore]
     fn test_feed() {
+        let mut board = Board::new(6, 6);
+
+        board.place(0, BuildingType::Orange);
+        board.place(1, BuildingType::Blue);
+        board.place(6, BuildingType::Blue);
+        board.place(7, BuildingType::Blue);
+
+        board.place(4, BuildingType::Blue);
+        board.place(5, BuildingType::Blue);
+        board.place(10, BuildingType::Blue);
+        board.place(11, BuildingType::Blue);
+
+        board.place(25, BuildingType::Orange);
+        board.place(30, BuildingType::Orange);
+        board.place(31, BuildingType::Magenta);
+        board.place(32, BuildingType::Orange);
+
+        board.place(28, BuildingType::Magenta);
+        board.place(29, BuildingType::Blue);
+        board.place(34, BuildingType::Blue);
+        board.place(35, BuildingType::Blue);
+
+        // Without Temple or Barrett Castle.
+        let building_config = BuildingConfig::new(
+            BlackBuilding::Factory,
+            BlueBuilding::Cottage,
+            GrayBuilding::Fountain,
+            GreenBuilding::Almshouse,
+            MagentaBuilding::SilvaForum,
+            OrangeBuilding::Abbey,
+            RedBuilding::Greenhouse,
+            YellowBuilding::Theater,
+        );
+
+        // Test empty board first.
+        assert!(feed(&board, &building_config).is_empty());
+
+        // Now place the greenhouse.
+        board.place(3, BuildingType::Red);
+
+        let ans = HashSet::from([4, 5, 10, 11]);
+        assert_eq!(feed(&board, &building_config), ans);
+
+        // With Temple, without Barrett Castle.
+        let building_config = BuildingConfig::new(
+            BlackBuilding::Factory,
+            BlueBuilding::Cottage,
+            GrayBuilding::Fountain,
+            GreenBuilding::Almshouse,
+            MagentaBuilding::SilvaForum,
+            OrangeBuilding::Temple,
+            RedBuilding::Greenhouse,
+            YellowBuilding::Theater,
+        );
+
+        let ans = HashSet::from([1, 6, 7]);
+        assert_eq!(feed(&board, &building_config), ans);
+
+        // Without Temple, with Barrett Castle.
+        let building_config = BuildingConfig::new(
+            BlackBuilding::Factory,
+            BlueBuilding::Cottage,
+            GrayBuilding::Fountain,
+            GreenBuilding::Almshouse,
+            MagentaBuilding::BarrettCastle,
+            OrangeBuilding::Abbey,
+            RedBuilding::Greenhouse,
+            YellowBuilding::Theater,
+        );
+
+        let ans = HashSet::from([28, 29, 34, 35]);
+        assert_eq!(feed(&board, &building_config), ans);
+
+        // With Temple and Barrett Castle.
+        let building_config = BuildingConfig::new(
+            BlackBuilding::Factory,
+            BlueBuilding::Cottage,
+            GrayBuilding::Fountain,
+            GreenBuilding::Almshouse,
+            MagentaBuilding::BarrettCastle,
+            OrangeBuilding::Temple,
+            RedBuilding::Greenhouse,
+            YellowBuilding::Theater,
+        );
+
+        let ans = HashSet::from([31]);
+        assert_eq!(feed(&board, &building_config), ans);
 
     }
 }

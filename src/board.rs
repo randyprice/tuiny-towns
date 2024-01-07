@@ -1,4 +1,4 @@
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 
 use crate::building::{BuildingType, Place};
 use crate::space::Space;
@@ -110,18 +110,6 @@ impl Board {
     }
 
     // -------------------------------------------------------------------------
-    pub fn corner_idxs(&self) -> HashSet<usize> {
-        let corner_idxs = HashSet::from([
-            0,
-            self.cols - 1,
-            self.elems - self.cols,
-            self.elems - 1,
-        ]);
-
-        corner_idxs
-    }
-
-    // -------------------------------------------------------------------------
     pub fn center_idxs(&self) -> HashSet<usize> {
         assert!(self.rows % 2 == 0);
         assert!(self.cols % 2 == 0);
@@ -138,9 +126,44 @@ impl Board {
     }
 
     // -------------------------------------------------------------------------
+    pub fn corner_idxs(&self) -> HashSet<usize> {
+        let corner_idxs = HashSet::from([
+            0,
+            self.cols - 1,
+            self.elems - self.cols,
+            self.elems - 1,
+        ]);
+
+        corner_idxs
+    }
+
+    /// Count the number of `Space::Building(building_type)` in each row and
+    /// column.
+    pub fn count_building_type_per_row_and_col(
+        &self,
+        building_type: BuildingType,
+    ) -> (HashMap<usize, u32>, HashMap<usize, u32>) {
+        let (count_per_row, count_per_col) = self.spaces
+            .iter()
+            .enumerate()
+            .fold(
+                (HashMap::new(), HashMap::new()),
+                |(mut count_per_row, mut count_per_col), (idx, space)| {
+                    if space.building_type_eq(building_type) {
+                        *count_per_row.entry(self.row(idx)).or_insert(0) += 1;
+                        *count_per_col.entry(self.col(idx)).or_insert(0) += 1;
+                    }
+                    (count_per_row, count_per_col)
+                }
+            );
+
+        (count_per_row, count_per_col)
+    }
+
+    // -------------------------------------------------------------------------
     // Return the set of different building types in the spaces specified by
     // idxs.
-    pub fn unique_building_types(
+    pub fn unique_building_types_in_idx_set(
         &self,
         idxs: &HashSet<usize>,
     ) -> HashSet<BuildingType> {
@@ -162,7 +185,7 @@ impl Board {
         idx: usize,
     ) -> HashSet<BuildingType> {
         let unique_adjacent_building_types
-            = self.unique_building_types(&self.adjacent_idxs(idx));
+            = self.unique_building_types_in_idx_set(&self.adjacent_idxs(idx));
 
         unique_adjacent_building_types
     }
@@ -173,7 +196,7 @@ impl Board {
         idx: usize,
     ) -> HashSet<BuildingType> {
         let unique_surrounding_building_types
-            = self.unique_building_types(&self.surrounding_idxs(idx));
+            = self.unique_building_types_in_idx_set(&self.surrounding_idxs(idx));
 
         unique_surrounding_building_types
     }
@@ -393,18 +416,18 @@ mod tests {
         let mut board = Board::new(7, 8);
 
         board.place(0, BuildingType::Blue);
-        let unique_building_types = board.unique_building_types(&HashSet::from([1]));
+        let unique_building_types = board.unique_building_types_in_idx_set(&HashSet::from([1]));
         assert!(unique_building_types.is_empty());
 
-        let unique_building_types = board.unique_building_types(&HashSet::from([0]));
+        let unique_building_types = board.unique_building_types_in_idx_set(&HashSet::from([0]));
         assert_eq!(unique_building_types, HashSet::from([BuildingType::Blue]));
 
         board.place(1, BuildingType::Red);
-        let unique_building_types = board.unique_building_types(&HashSet::from([0, 1]));
+        let unique_building_types = board.unique_building_types_in_idx_set(&HashSet::from([0, 1]));
         assert_eq!(unique_building_types, HashSet::from([BuildingType::Blue, BuildingType::Red]));
 
         board.place(6, BuildingType::Green);
-        let unique_building_types = board.unique_building_types(&HashSet::from([1, 5, 9]));
+        let unique_building_types = board.unique_building_types_in_idx_set(&HashSet::from([1, 5, 9]));
         assert_eq!(unique_building_types, HashSet::from([BuildingType::Red]));
     }
 
@@ -613,6 +636,30 @@ mod tests {
         let eq = groups.iter().all(|s| ans.contains(&s))
             && ans.iter().all(|s| groups.contains(&s));
         assert!(eq);
+    }
+
+    // -------------------------------------------------------------------------
+    #[test]
+    fn test_count_building_type_per_row_and_col() {
+        let mut board = Board::new(4, 4);
+        let (count_per_row, count_per_col) =
+            board.count_building_type_per_row_and_col(BuildingType::Black);
+        assert!(count_per_row.is_empty());
+        assert!(count_per_col.is_empty());
+
+        board.place(0, BuildingType::Black);
+        board.place(2, BuildingType::Black);
+        board.place(5, BuildingType::Red);
+
+        let (count_per_row, count_per_col) =
+            board.count_building_type_per_row_and_col(BuildingType::Black);
+        assert_eq!(count_per_row, HashMap::from([(0, 2)]));
+        assert_eq!(count_per_col, HashMap::from([(0, 1), (2, 1)]));
+
+        let (count_per_row, count_per_col) =
+            board.count_building_type_per_row_and_col(BuildingType::Red);
+        assert_eq!(count_per_row, HashMap::from([(1, 1)]));
+        assert_eq!(count_per_col, HashMap::from([(1, 1)]));
     }
 
 }
