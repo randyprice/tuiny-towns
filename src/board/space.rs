@@ -26,7 +26,7 @@ pub enum Space {
     Building(BuildingType),
     BuildingWithOptResource(BuildingType, Option<Resource>),
     BuildingWithResource(BuildingType, Resource),
-    BuildingWithResources(BuildingType, Vec<Resource>, usize),
+    BuildingWithResources(BuildingType, Vec<Resource>),
     Resource(Resource),
     Empty,
 }
@@ -38,7 +38,7 @@ impl Space {
             Space::Building(building_type)
             | Space::BuildingWithOptResource(building_type, _)
             | Space::BuildingWithResource(building_type, _)
-            | Space::BuildingWithResources(building_type, _, _) =>
+            | Space::BuildingWithResources(building_type, _) =>
                 Some(*building_type),
             _ => None
         };
@@ -90,6 +90,6 @@ impl Place for (BuildingType, Resource) {
 
 impl Place for (BuildingType, Vec<Resource>, usize) {
     fn to_space(self) -> Space {
-        Space::BuildingWithResources(self.0, self.1, self.2)
+        Space::BuildingWithResources(self.0, self.1)
     }
 }

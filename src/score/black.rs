@@ -13,7 +13,7 @@ fn score_warehouses(board: &Board) -> HashMap<usize, i32> {
         .fold(HashMap::new(), |mut m, (idx, space)| {
             match space {
                 // TODO add method to get resources.
-                Space::BuildingWithResources(BuildingType::Black, resources, _) => {
+                Space::BuildingWithResources(BuildingType::Black, resources) => {
                     m.insert(idx, resources.len() as i32 * -1);
                 }
                 _ => (),

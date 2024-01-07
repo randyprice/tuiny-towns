@@ -151,7 +151,7 @@ impl Space {
             Space::Building(building_type)
             | Space::BuildingWithOptResource(building_type, _)
             | Space::BuildingWithResource(building_type, _)
-            | Space::BuildingWithResources(building_type, _, _) => {
+            | Space::BuildingWithResources(building_type, _) => {
                 let symbol = if let Some(scores) = scores_opt {
                     scores.get(&idx).unwrap().to_string()
                 } else {
