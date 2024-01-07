@@ -3,7 +3,7 @@ use std::collections::HashSet;
 use crate::board::Board;
 use crate::building_config::BuildingConfig;
 use crate::building::BuildingType;
-use crate::feed::feedable_idxs;
+use crate::score::feed::feedable_idxs;
 
 // -----------------------------------------------------------------------------
 pub fn feed(board: &Board, building_config: &BuildingConfig) -> HashSet<usize> {

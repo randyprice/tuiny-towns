@@ -6,7 +6,7 @@ use itertools::Itertools;
 use crate::board::Board;
 use crate::building_config::BuildingConfig;
 use crate::building::BuildingType;
-use crate::feed::{best_fed_idxs, feedable_idxs};
+use crate::score::feed::{best_fed_idxs, feedable_idxs};
 
 // -----------------------------------------------------------------------------
 fn feedable_permutations(

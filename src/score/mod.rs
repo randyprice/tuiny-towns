@@ -3,11 +3,12 @@ use std::collections::{HashMap, HashSet};
 use crate::board::Board;
 use crate::building::{BuildingType, MagentaBuilding};
 use crate::building_config::BuildingConfig;
-use crate::feed::feed;
+use crate::score::feed::feed;
 use crate::space::Space;
 
 pub mod black;
 pub mod blue;
+pub mod feed;
 pub mod gray;
 pub mod green;
 pub mod magenta;

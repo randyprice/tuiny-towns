@@ -10,7 +10,6 @@ pub mod board;
 pub mod building;
 pub mod building_config;
 pub mod display;
-pub mod feed;
 pub mod score;
 pub mod space;
 pub mod utils;
