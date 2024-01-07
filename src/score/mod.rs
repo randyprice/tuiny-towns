@@ -1,7 +1,7 @@
 use std::collections::{HashMap, HashSet};
 
 use crate::board::Board;
-use crate::board::space::{BuildingType, Space};
+use crate::board::space::BuildingType;
 use crate::building_config::{BuildingConfig, MagentaBuilding};
 use crate::score::feed::feed;
 
@@ -224,14 +224,11 @@ fn score_unused_spaces(
     let scores = board.spaces()
         .iter()
         .enumerate()
-        .fold(HashMap::new(), |mut m, (idx, space)| {
-            match space {
-                Space::Resource(_) | Space::Empty => {
-                    m.insert(idx, points);
-                }
-                _ => (),
+        .fold(HashMap::new(), |mut scores, (idx, space)| {
+            if space.is_unused() {
+                scores.insert(idx, points);
             }
-            m
+            scores
         });
 
     scores

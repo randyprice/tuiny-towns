@@ -59,6 +59,14 @@ impl Space {
     }
 
     // -------------------------------------------------------------------------
+    pub fn is_unused(&self) -> bool {
+        match self {
+            Space::Resource(_) | Space::Empty => true,
+            _ => false,
+        }
+    }
+
+    // -------------------------------------------------------------------------
     pub fn resources(&self) -> Option<&Vec<Resource>> {
         match self {
             Space::BuildingWithResources(_, resources) => Some(resources),
