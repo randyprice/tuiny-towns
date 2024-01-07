@@ -57,6 +57,14 @@ impl Space {
 
         eq
     }
+
+    // -------------------------------------------------------------------------
+    pub fn resources(&self) -> Option<&Vec<Resource>> {
+        match self {
+            Space::BuildingWithResources(_, resources) => Some(resources),
+            _ => None,
+        }
+    }
 }
 
 // =============================================================================

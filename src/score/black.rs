@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use crate::board::Board;
-use crate::board::space::{BuildingType, Space};
+use crate::board::space::BuildingType;
 use crate::building_config::{BlackBuilding, BuildingConfig};
 use crate::score::score_per_each;
 
@@ -10,15 +10,11 @@ fn score_warehouses(board: &Board) -> HashMap<usize, i32> {
     let scores = board.spaces()
         .iter()
         .enumerate()
-        .fold(HashMap::new(), |mut m, (idx, space)| {
-            match space {
-                // TODO add method to get resources.
-                Space::BuildingWithResources(BuildingType::Black, resources) => {
-                    m.insert(idx, resources.len() as i32 * -1);
-                }
-                _ => (),
+        .fold(HashMap::new(), |mut scores, (idx, space)| {
+            if let Some(resources) = space.resources() {
+                scores.insert(idx, resources.len() as i32 * -1);
             }
-            m
+            scores
         });
 
     scores
