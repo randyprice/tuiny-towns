@@ -1,7 +1,7 @@
 use std::collections::{HashMap, HashSet};
 
 use crate::board::Board;
-use crate::board::space::{BuildingType, Resource, Space};
+use crate::board::space::{BuildingType, Space};
 use crate::building_config::{BuildingConfig, MagentaBuilding};
 use crate::score::feed::feed;
 
@@ -263,6 +263,7 @@ pub fn score(
 #[cfg(test)]
 mod test {
     use super::*;
+    use crate::board::space::Resource;
     use crate::building_config::{
         BlackBuilding, BlueBuilding, GrayBuilding, GreenBuilding,
         MagentaBuilding, OrangeBuilding, RedBuilding, YellowBuilding
