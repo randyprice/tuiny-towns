@@ -1,17 +1,16 @@
-use crate::building::{
+use crate::building_config::{
     BlackBuilding, BlueBuilding, GrayBuilding, GreenBuilding, MagentaBuilding,
     OrangeBuilding, RedBuilding, YellowBuilding};
 use crate::board::Board;
-use crate::building::{BuildingType, Resource};
 use crate::building_config::BuildingConfig;
 use crate::score::score;
+use crate::board::space::{BuildingType, Resource};
 
 pub mod board;
 pub mod building;
 pub mod building_config;
 pub mod display;
 pub mod score;
-pub mod space;
 pub mod utils;
 
 fn main() {

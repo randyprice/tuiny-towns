@@ -1,7 +1,8 @@
 use std::collections::{HashMap, HashSet};
 
-use crate::building::{BuildingType, Place};
-use crate::space::Space;
+use crate::board::space::{BuildingType, Space, Place};
+
+pub mod space;
 
 // =============================================================================
 pub struct Board {

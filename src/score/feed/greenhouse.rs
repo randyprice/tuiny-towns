@@ -3,8 +3,8 @@ use std::collections::HashSet;
 use itertools::Itertools;
 
 use crate::board::Board;
-use crate::building::{BuildingType, MagentaBuilding};
-use crate::building_config::BuildingConfig;
+use crate::board::space::BuildingType;
+use crate::building_config::{BuildingConfig, MagentaBuilding};
 use crate::score::feed::best_fed_idxs;
 
 // -----------------------------------------------------------------------------
@@ -49,7 +49,7 @@ pub fn feed(board: &Board, building_config: &BuildingConfig) -> HashSet<usize> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::building::{
+    use crate::building_config::{
         BlackBuilding, BlueBuilding, GrayBuilding, GreenBuilding,
         MagentaBuilding, OrangeBuilding, RedBuilding, YellowBuilding
     };

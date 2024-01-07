@@ -3,8 +3,8 @@ use std::collections::{HashMap, HashSet};
 use strum::IntoEnumIterator;
 
 use crate::board::Board;
-use crate::building::{BuildingType, MagentaBuilding};
-use crate::building_config::BuildingConfig;
+use crate::board::space::BuildingType;
+use crate::building_config::{BuildingConfig, MagentaBuilding};
 use crate::score::{score_if_in_idx_set, score_per_each};
 
 // -----------------------------------------------------------------------------

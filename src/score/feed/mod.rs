@@ -1,12 +1,9 @@
 use std::collections::HashSet;
 
 use crate::board::Board;
-use crate::building::{BuildingType, MagentaBuilding, RedBuilding};
-use crate::building_config::BuildingConfig;
-use crate::score::blue;
-use crate::score::magenta;
-use crate::score::orange;
-use crate::space::Space;
+use crate::board::space::{BuildingType, Space};
+use crate::building_config::{BuildingConfig, MagentaBuilding, RedBuilding};
+use crate::score::{blue, magenta, orange};
 
 pub mod farm;
 pub mod granary;
@@ -80,7 +77,7 @@ pub fn feed(board: &Board, building_config: &BuildingConfig) -> HashSet<usize> {
 #[cfg(test)]
 mod test {
     use super::*;
-    use crate::building::{
+    use crate::building_config::{
         BlackBuilding, BlueBuilding, GrayBuilding, GreenBuilding,
         MagentaBuilding, OrangeBuilding, RedBuilding, YellowBuilding
     };

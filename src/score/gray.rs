@@ -1,8 +1,8 @@
 use std::collections::{HashMap, HashSet};
 
 use crate::board::Board;
-use crate::building::{BuildingType, GrayBuilding};
-use crate::building_config::BuildingConfig;
+use crate::board::space::BuildingType;
+use crate::building_config::{BuildingConfig, GrayBuilding};
 use crate::score::{score_if_adjacent_to, score_if_in_idx_set, score_per_each};
 
 // -----------------------------------------------------------------------------
@@ -74,7 +74,7 @@ pub fn score(
 #[cfg(test)]
 mod test {
     use super::*;
-    use crate::building::{
+    use crate::building_config::{
         BlackBuilding, BlueBuilding, GrayBuilding, GreenBuilding,
         MagentaBuilding, OrangeBuilding, RedBuilding, YellowBuilding
     };

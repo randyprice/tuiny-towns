@@ -3,11 +3,10 @@ use std::collections::HashMap;
 use colored::{ColoredString, Colorize};
 
 use crate::board::Board;
-use crate::building::{BuildingType, BlackBuilding, BlueBuilding,
+use crate::board::space::{BuildingType, Space};
+use crate::building_config::{BlackBuilding, BlueBuilding, BuildingConfig,
     GrayBuilding, GreenBuilding, MagentaBuilding, OrangeBuilding, RedBuilding,
     YellowBuilding};
-use crate::building_config::BuildingConfig;
-use crate::space::Space;
 use crate::score::ScoreCard;
 
 // =============================================================================
