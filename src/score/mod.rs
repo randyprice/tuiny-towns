@@ -14,6 +14,8 @@ pub mod magenta;
 pub mod orange;
 pub mod yellow;
 
+// =============================================================================
+/// A `ScoreCard`.
 pub struct ScoreCard {
     black: HashMap<usize, i32>,
     blue: HashMap<usize, i32>,
@@ -27,9 +29,29 @@ pub struct ScoreCard {
 }
 
 impl ScoreCard {
+    /// Return the total score of one building type by passing its respective
+    /// `HashMap` to `score`.
     fn score(&self, map: &HashMap<usize, i32>) -> i32 {
         map.values().into_iter().sum()
     }
+
+    // Public functions
+    /// Combine the `ScoreCard`'s fields into a single `HashMap`.
+    pub fn flatten(&self) -> HashMap<usize, i32> {
+        let flattened: HashMap<usize, i32> = self.black.clone().into_iter()
+            .chain(self.blue.clone())
+            .chain(self.gray.clone())
+            .chain(self.green.clone())
+            .chain(self.magenta.clone())
+            .chain(self.orange.clone())
+            .chain(self.red.clone())
+            .chain(self.yellow.clone())
+            .chain(self.unused.clone())
+            .collect();
+        flattened
+    }
+
+    /// Return the total score.
     pub fn score_all(&self) -> i32 {
         let score = self.score_black()
             + self.score_blue()
@@ -43,36 +65,41 @@ impl ScoreCard {
 
         score
     }
-    pub fn flatten(&self) -> HashMap<usize, i32> {
-        let flattened: HashMap<usize, i32> = self.black.clone().into_iter()
-            .chain(self.blue.clone())
-            .chain(self.gray.clone())
-            .chain(self.green.clone())
-            .chain(self.magenta.clone())
-            .chain(self.orange.clone())
-            .chain(self.red.clone())
-            .chain(self.yellow.clone())
-            .chain(self.unused.clone())
-            .collect();
 
-        flattened
-    }
+    /// Return the total score of all black buildings.
     pub fn score_black(&self) -> i32 { self.score(&self.black) }
+
+    /// Return the total score of all blue buildings.
     pub fn score_blue(&self) -> i32 { self.score(&self.blue) }
+
+    /// Return the total score of all gray buildings.
     pub fn score_gray(&self) -> i32 { self.score(&self.gray) }
+
+    /// Return the total score of all green buildings.
     pub fn score_green(&self) -> i32 { self.score(&self.green) }
+
+    /// Return the total score of all magenta buildings.
     pub fn score_magenta(&self) -> i32 { self.score(&self.magenta) }
+
+    /// Return the total score of all orange buildings.
     pub fn score_orange(&self) -> i32 { self.score(&self.orange) }
+
+    /// Return the total score of all red buildings.
     pub fn score_red(&self) -> i32 { self.score(&self.red) }
+
+    /// Return the total score of all yellow buildings.
     pub fn score_yellow(&self) -> i32 { self.score(&self.yellow) }
+
+    /// Return the total score of all unused spaces.
     pub fn score_unused(&self) -> i32 { self.score(&self.unused) }
 
 }
 
 // -----------------------------------------------------------------------------
-// If is_disjoint is false, buildings will score if they are adjacent to any
-// building with a BulidingType in adjacent_types; if is_disjont is true,
-// they will not score.
+/// Score buildings of a given type based on adjacency to the building types
+/// in `adjacent_types`. If `is_disjoint` is `false`, buildings of type
+/// `building_type` will score if they are adjacent to any types in
+/// `adjacent_types`; if `is_disjont` is true, they will not score.
 fn score_by_adjacency(
     is_disjoint: bool,
     board: &Board,
@@ -102,6 +129,9 @@ fn score_by_adjacency(
 }
 
 // -----------------------------------------------------------------------------
+/// Score based on the total number of buildings of type `building_type` as
+/// indicated in `points_by_count` and `default`. The first `building_type`
+/// building is assigned the score, and the rest are given a score of `0`.
 fn score_by_count(
     board: &Board,
     building_type: BuildingType,
@@ -130,6 +160,8 @@ fn score_by_count(
 }
 
 // -----------------------------------------------------------------------------
+/// Score each `building_type` building if it is adjacent to any building types
+/// in `adjacent_types`.
 fn score_if_adjacent_to(
     board: &Board,
     building_type: BuildingType,
@@ -148,6 +180,7 @@ fn score_if_adjacent_to(
 }
 
 // -----------------------------------------------------------------------------
+/// Score each `building_type` building if `idxs` contains its index.
 fn score_if_in_idx_set(
     board: &Board,
     idxs: &HashSet<usize>,
@@ -172,6 +205,8 @@ fn score_if_in_idx_set(
 }
 
 // -----------------------------------------------------------------------------
+/// Score each `building_type` buildings if it is not adjacent to any building
+/// types in `adjacent_types`.
 fn score_if_not_adjacent_to(
     board: &Board,
     building_type: BuildingType,
@@ -190,6 +225,7 @@ fn score_if_not_adjacent_to(
 }
 
 // -----------------------------------------------------------------------------
+/// Score each `building_type` building.
 fn score_per_each(
     board: &Board,
     building_type: BuildingType,
@@ -209,6 +245,7 @@ fn score_per_each(
 }
 
 // -----------------------------------------------------------------------------
+/// Score unused spaces.
 fn score_unused_spaces(
     board: &Board,
     building_config: &BuildingConfig,
