@@ -2,10 +2,11 @@ use std::collections::HashSet;
 
 use itertools::Itertools;
 
-use crate::board::Board;
 use crate::board::space::BuildingType;
+use crate::board::Board;
 use crate::building_config::{BuildingConfig, MagentaBuilding};
 use crate::score::feed::best_fed_idxs;
+use crate::score::ScoringContext;
 
 // -----------------------------------------------------------------------------
 fn feedable_permutations(
@@ -19,17 +20,20 @@ fn feedable_permutations(
             HashSet::from([BuildingType::Blue])
         };
 
-    let permutations = board.contiguous_groups(&building_types)
+    let permutations = board
+        .contiguous_groups(&building_types)
         .into_iter()
         .combinations(board.count_building_type(BuildingType::Red) as usize)
         .fold(Vec::new(), |mut permutations, groups| {
             // A single permutation consists of N contiguous groups of feedable
             // buildings, where N is the number of greenhouses on the board.
-            let permutation = groups.iter()
-                .fold(HashSet::new(), |mut permutation, group| {
-                    permutation.extend(group);
-                    permutation
-                });
+            let permutation =
+                groups
+                    .iter()
+                    .fold(HashSet::new(), |mut permutation, group| {
+                        permutation.extend(group);
+                        permutation
+                    });
             permutations.push(permutation);
             permutations
         });
@@ -38,9 +42,14 @@ fn feedable_permutations(
 }
 
 // -----------------------------------------------------------------------------
-pub fn feed(board: &Board, building_config: &BuildingConfig) -> HashSet<usize> {
+pub fn feed(
+    board: &Board,
+    building_config: &BuildingConfig,
+    scoring_context: &ScoringContext,
+) -> HashSet<usize> {
     let permutations = feedable_permutations(board, building_config);
-    let fed_buildings = best_fed_idxs(board, building_config, permutations);
+    let fed_buildings =
+        best_fed_idxs(board, building_config, scoring_context, permutations);
 
     fed_buildings
 }
@@ -51,7 +60,7 @@ mod tests {
     use super::*;
     use crate::building_config::{
         BlackBuilding, BlueBuilding, GrayBuilding, GreenBuilding,
-        MagentaBuilding, OrangeBuilding, RedBuilding, YellowBuilding
+        MagentaBuilding, OrangeBuilding, RedBuilding, YellowBuilding,
     };
     use crate::utils::vec_hashset_eq;
 
@@ -135,12 +144,12 @@ mod tests {
         println!("ans: {:?}", ans);
 
         assert!(vec_hashset_eq(&permutations, &ans));
-
     }
 
     // -------------------------------------------------------------------------
     #[test]
     fn test_feed() {
+        let scoring_context = ScoringContext::default();
         let mut board = Board::new(6, 6);
 
         board.place(0, BuildingType::Orange);
@@ -176,13 +185,13 @@ mod tests {
         );
 
         // Test empty board first.
-        assert!(feed(&board, &building_config).is_empty());
+        assert!(feed(&board, &building_config, &scoring_context).is_empty());
 
         // Now place the greenhouse.
         board.place(3, BuildingType::Red);
 
         let ans = HashSet::from([4, 5, 10, 11]);
-        assert_eq!(feed(&board, &building_config), ans);
+        assert_eq!(feed(&board, &building_config, &scoring_context), ans);
 
         // With Temple, without Barrett Castle.
         let building_config = BuildingConfig::new(
@@ -197,7 +206,7 @@ mod tests {
         );
 
         let ans = HashSet::from([1, 6, 7]);
-        assert_eq!(feed(&board, &building_config), ans);
+        assert_eq!(feed(&board, &building_config, &scoring_context), ans);
 
         // Without Temple, with Barrett Castle.
         let building_config = BuildingConfig::new(
@@ -212,7 +221,7 @@ mod tests {
         );
 
         let ans = HashSet::from([28, 29, 34, 35]);
-        assert_eq!(feed(&board, &building_config), ans);
+        assert_eq!(feed(&board, &building_config, &scoring_context), ans);
 
         // With Temple and Barrett Castle.
         let building_config = BuildingConfig::new(
@@ -227,7 +236,6 @@ mod tests {
         );
 
         let ans = HashSet::from([31]);
-        assert_eq!(feed(&board, &building_config), ans);
-
+        assert_eq!(feed(&board, &building_config, &scoring_context), ans);
     }
 }

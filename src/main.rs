@@ -1,10 +1,11 @@
-use crate::building_config::{
-    BlackBuilding, BlueBuilding, GrayBuilding, GreenBuilding, MagentaBuilding,
-    OrangeBuilding, RedBuilding, YellowBuilding};
+use crate::board::space::{BuildingType, Resource};
 use crate::board::Board;
 use crate::building_config::BuildingConfig;
-use crate::score::score;
-use crate::board::space::{BuildingType, Resource};
+use crate::building_config::{
+    BlackBuilding, BlueBuilding, GrayBuilding, GreenBuilding, MagentaBuilding,
+    OrangeBuilding, RedBuilding, YellowBuilding,
+};
+use crate::score::{score, ScoringContext};
 
 pub mod board;
 pub mod building_config;
@@ -24,6 +25,8 @@ fn main() {
         YellowBuilding::Tailor,
     );
 
+    let scoring_context = ScoringContext::default();
+
     let mut board = Board::new(4, 4);
 
     board.place(0, BuildingType::Orange);
@@ -42,11 +45,17 @@ fn main() {
     board.place(11, BuildingType::Gray);
 
     board.place(12, BuildingType::Orange);
-    board.place(13, (BuildingType::Black, vec![Resource::Glass, Resource::Brick], 3));
+    board.place(
+        13,
+        (
+            BuildingType::Black,
+            vec![Resource::Glass, Resource::Brick],
+            3,
+        ),
+    );
     board.place(14, BuildingType::Magenta);
     board.place(15, Resource::Wood);
 
-    let score_card = score(&board, &building_config, None);
+    let score_card = score(&board, &building_config, &scoring_context, None);
     board.print_scores(&score_card, &building_config);
-
 }

@@ -82,7 +82,6 @@ pub struct BuildingConfig {
 }
 
 impl BuildingConfig {
-
     pub fn new(
         black: BlackBuilding,
         blue: BlueBuilding,
@@ -105,12 +104,28 @@ impl BuildingConfig {
         }
     }
 
-    pub fn black(&self) -> BlackBuilding { self.black }
-    pub fn blue(&self) -> BlueBuilding { self.blue }
-    pub fn gray(&self) -> GrayBuilding { self.gray }
-    pub fn green(&self) -> GreenBuilding { self.green }
-    pub fn magenta(&self) -> MagentaBuilding { self.magenta }
-    pub fn orange(&self) -> OrangeBuilding { self.orange }
-    pub fn red(&self) -> RedBuilding { self.red }
-    pub fn yellow(&self) -> YellowBuilding { self.yellow }
+    pub fn black(&self) -> BlackBuilding {
+        self.black
+    }
+    pub fn blue(&self) -> BlueBuilding {
+        self.blue
+    }
+    pub fn gray(&self) -> GrayBuilding {
+        self.gray
+    }
+    pub fn green(&self) -> GreenBuilding {
+        self.green
+    }
+    pub fn magenta(&self) -> MagentaBuilding {
+        self.magenta
+    }
+    pub fn orange(&self) -> OrangeBuilding {
+        self.orange
+    }
+    pub fn red(&self) -> RedBuilding {
+        self.red
+    }
+    pub fn yellow(&self) -> YellowBuilding {
+        self.yellow
+    }
 }

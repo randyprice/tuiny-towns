@@ -1,6 +1,6 @@
 use std::collections::{HashMap, HashSet};
 
-use crate::board::space::{BuildingType, Space, Place};
+use crate::board::space::{BuildingType, Place, Space};
 
 pub mod space;
 
@@ -27,19 +27,29 @@ impl Board {
     }
 
     // -------------------------------------------------------------------------
-    pub fn cols(&self) -> usize { self.cols }
+    pub fn cols(&self) -> usize {
+        self.cols
+    }
 
     // -------------------------------------------------------------------------
-    pub fn rows(&self) -> usize { self.rows }
+    pub fn rows(&self) -> usize {
+        self.rows
+    }
 
     // -------------------------------------------------------------------------
-    pub fn elems(&self) -> usize { self.elems }
+    pub fn elems(&self) -> usize {
+        self.elems
+    }
 
     // -------------------------------------------------------------------------
-    pub fn col(&self, idx: usize) -> usize { idx % self.cols }
+    pub fn col(&self, idx: usize) -> usize {
+        idx % self.cols
+    }
 
     // -------------------------------------------------------------------------
-    pub fn row(&self, idx: usize) -> usize { idx / self.cols }
+    pub fn row(&self, idx: usize) -> usize {
+        idx / self.cols
+    }
 
     // -------------------------------------------------------------------------
     pub fn idx(&self, row: usize, col: usize) -> usize {
@@ -80,12 +90,12 @@ impl Board {
         let mut diagonal_idxs = HashSet::new();
 
         // Northwestern neighbor.
-        if self.row(idx) > 0 && self.col(idx) > 0{
+        if self.row(idx) > 0 && self.col(idx) > 0 {
             diagonal_idxs.insert(idx - self.cols - 1);
         }
 
         // Northeastern neighbor.
-        if self.row(idx) > 0 && self.col(idx) < self.cols - 1{
+        if self.row(idx) > 0 && self.col(idx) < self.cols - 1 {
             diagonal_idxs.insert(idx - self.cols + 1);
         }
 
@@ -120,7 +130,7 @@ impl Board {
             southeast_center - self.cols - 1,
             southeast_center - self.cols,
             southeast_center - 1,
-            southeast_center
+            southeast_center,
         ]);
 
         center_idxs
@@ -144,10 +154,8 @@ impl Board {
         &self,
         building_type: BuildingType,
     ) -> (HashMap<usize, u32>, HashMap<usize, u32>) {
-        let (count_per_row, count_per_col) = self.spaces
-            .iter()
-            .enumerate()
-            .fold(
+        let (count_per_row, count_per_col) =
+            self.spaces.iter().enumerate().fold(
                 (HashMap::new(), HashMap::new()),
                 |(mut count_per_row, mut count_per_col), (idx, space)| {
                     if space.building_type_eq(building_type) {
@@ -155,7 +163,7 @@ impl Board {
                         *count_per_col.entry(self.col(idx)).or_insert(0) += 1;
                     }
                     (count_per_row, count_per_col)
-                }
+                },
             );
 
         (count_per_row, count_per_col)
@@ -168,8 +176,8 @@ impl Board {
         &self,
         idxs: &HashSet<usize>,
     ) -> HashSet<BuildingType> {
-        let unique_building_types = idxs.into_iter()
-            .fold(HashSet::new(), |mut s, idx| {
+        let unique_building_types =
+            idxs.into_iter().fold(HashSet::new(), |mut s, idx| {
                 let space = &self.spaces[*idx];
                 if let Some(building_type) = space.building_type() {
                     s.insert(building_type);
@@ -185,8 +193,8 @@ impl Board {
         &self,
         idx: usize,
     ) -> HashSet<BuildingType> {
-        let unique_adjacent_building_types
-            = self.unique_building_types_in_idx_set(&self.adjacent_idxs(idx));
+        let unique_adjacent_building_types =
+            self.unique_building_types_in_idx_set(&self.adjacent_idxs(idx));
 
         unique_adjacent_building_types
     }
@@ -196,8 +204,8 @@ impl Board {
         &self,
         idx: usize,
     ) -> HashSet<BuildingType> {
-        let unique_surrounding_building_types
-            = self.unique_building_types_in_idx_set(&self.surrounding_idxs(idx));
+        let unique_surrounding_building_types =
+            self.unique_building_types_in_idx_set(&self.surrounding_idxs(idx));
 
         unique_surrounding_building_types
     }
@@ -221,7 +229,8 @@ impl Board {
                 let space = &self.spaces()[adjacent_idx];
                 if let Some(building_type) = space.building_type() {
                     if !visited[adjacent_idx]
-                    && building_types.contains(&building_type) {
+                        && building_types.contains(&building_type)
+                    {
                         visited[adjacent_idx] = true;
                         queue.push(adjacent_idx);
                     }
@@ -238,24 +247,28 @@ impl Board {
         &self,
         building_types: &HashSet<BuildingType>,
     ) -> Vec<HashSet<usize>> {
-        let contiguous_groups = self.spaces()
+        let contiguous_groups = self
+            .spaces()
             .iter()
             .enumerate()
             .fold(
                 (Vec::new(), vec![false; self.elems]),
                 |(mut groups, mut visited), (idx, space)| {
-                if let Some(building_type) = space.building_type() {
-                    if building_types.contains(&building_type) && !visited[idx] {
-                        let group = self.contiguous_group(
-                            &building_types,
-                            &mut visited,
-                            idx
-                        );
-                        groups.push(group);
+                    if let Some(building_type) = space.building_type() {
+                        if building_types.contains(&building_type)
+                            && !visited[idx]
+                        {
+                            let group = self.contiguous_group(
+                                &building_types,
+                                &mut visited,
+                                idx,
+                            );
+                            groups.push(group);
+                        }
                     }
-                }
-                (groups, visited)
-            })
+                    (groups, visited)
+                },
+            )
             .0;
 
         contiguous_groups
@@ -264,16 +277,14 @@ impl Board {
     // -------------------------------------------------------------------------
     pub fn count_building_type(&self, building_type: BuildingType) -> u32 {
         // TODO - replace with if-let chain with future Rust version.
-        let count = self.spaces
-            .iter()
-            .fold(0, |mut n, space| {
-                if let Some(bt) = space.building_type() {
-                    if bt == building_type {
-                        n += 1;
-                    }
+        let count = self.spaces.iter().fold(0, |mut n, space| {
+            if let Some(bt) = space.building_type() {
+                if bt == building_type {
+                    n += 1;
                 }
-                n
-            });
+            }
+            n
+        });
 
         count
     }
@@ -286,24 +297,23 @@ impl Board {
         idx: usize,
         adjacent_types: &HashSet<BuildingType>,
     ) -> u32 {
-        let count = self.adjacent_idxs(idx)
-            .iter()
-            .fold(0, |mut n, idx| {
-                let space = &self.spaces()[*idx];
-                if let Some(building_type) = space.building_type() {
-                    if adjacent_types.contains(&building_type) {
-                        n += 1;
-                    }
+        let count = self.adjacent_idxs(idx).iter().fold(0, |mut n, idx| {
+            let space = &self.spaces()[*idx];
+            if let Some(building_type) = space.building_type() {
+                if adjacent_types.contains(&building_type) {
+                    n += 1;
                 }
-                n
-            });
+            }
+            n
+        });
 
         count
     }
 
     // -------------------------------------------------------------------------
     pub fn place<T>(&mut self, idx: usize, item: T)
-    where T: Place
+    where
+        T: Place,
     {
         self.spaces[idx] = item.to_space();
     }
@@ -330,7 +340,7 @@ mod tests {
         let board = Board::new(7, 4);
         assert_eq!(board.col(0), 0);
         assert_eq!(board.col(2), 2);
-        assert_eq!(board.col(15),3);
+        assert_eq!(board.col(15), 3);
     }
 
     // -------------------------------------------------------------------------
@@ -378,17 +388,18 @@ mod tests {
     // -------------------------------------------------------------------------
     #[test]
     fn test_surrounding_idxs() {
-
         let board = Board::new(5, 5);
         let surrounding_idxs = board.surrounding_idxs(0);
         assert_eq!(surrounding_idxs, HashSet::from([1, 5, 6]));
-
 
         let surrounding_idxs = board.surrounding_idxs(10);
         assert_eq!(surrounding_idxs, HashSet::from([5, 6, 11, 15, 16]));
 
         let surrounding_idxs = board.surrounding_idxs(18);
-        assert_eq!(surrounding_idxs, HashSet::from([12, 13, 14, 17, 19, 22, 23, 24]));
+        assert_eq!(
+            surrounding_idxs,
+            HashSet::from([12, 13, 14, 17, 19, 22, 23, 24])
+        );
     }
 
     // -------------------------------------------------------------------------
@@ -417,18 +428,25 @@ mod tests {
         let mut board = Board::new(7, 8);
 
         board.place(0, BuildingType::Blue);
-        let unique_building_types = board.unique_building_types_in_idx_set(&HashSet::from([1]));
+        let unique_building_types =
+            board.unique_building_types_in_idx_set(&HashSet::from([1]));
         assert!(unique_building_types.is_empty());
 
-        let unique_building_types = board.unique_building_types_in_idx_set(&HashSet::from([0]));
+        let unique_building_types =
+            board.unique_building_types_in_idx_set(&HashSet::from([0]));
         assert_eq!(unique_building_types, HashSet::from([BuildingType::Blue]));
 
         board.place(1, BuildingType::Red);
-        let unique_building_types = board.unique_building_types_in_idx_set(&HashSet::from([0, 1]));
-        assert_eq!(unique_building_types, HashSet::from([BuildingType::Blue, BuildingType::Red]));
+        let unique_building_types =
+            board.unique_building_types_in_idx_set(&HashSet::from([0, 1]));
+        assert_eq!(
+            unique_building_types,
+            HashSet::from([BuildingType::Blue, BuildingType::Red])
+        );
 
         board.place(6, BuildingType::Green);
-        let unique_building_types = board.unique_building_types_in_idx_set(&HashSet::from([1, 5, 9]));
+        let unique_building_types =
+            board.unique_building_types_in_idx_set(&HashSet::from([1, 5, 9]));
         assert_eq!(unique_building_types, HashSet::from([BuildingType::Red]));
     }
 
@@ -449,18 +467,23 @@ mod tests {
         board.place(24, BuildingType::Magenta);
 
         // Two adjacent building of two different types.
-        assert_eq!(board.unique_adjacent_building_types(0),
+        assert_eq!(
+            board.unique_adjacent_building_types(0),
             HashSet::from([BuildingType::Blue, BuildingType::Orange])
         );
         // Three adjacent buildings of three different types.
-        assert_eq!(board.unique_adjacent_building_types(9),
-            HashSet::from([BuildingType::Blue, BuildingType::Orange,
+        assert_eq!(
+            board.unique_adjacent_building_types(9),
+            HashSet::from([
+                BuildingType::Blue,
+                BuildingType::Orange,
                 BuildingType::Gray
             ])
         );
 
         // Three adjacent buildings of two different types.
-        assert_eq!(board.unique_adjacent_building_types(22),
+        assert_eq!(
+            board.unique_adjacent_building_types(22),
             HashSet::from([BuildingType::Blue, BuildingType::Red])
         );
 
@@ -487,16 +510,28 @@ mod tests {
 
         board.place(1, BuildingType::Blue);
         let adjacent_types = board.unique_surrounding_building_types(7);
-        assert_eq!(adjacent_types, HashSet::from([BuildingType::Blue, BuildingType::Red]));
+        assert_eq!(
+            adjacent_types,
+            HashSet::from([BuildingType::Blue, BuildingType::Red])
+        );
 
         board.place(0, BuildingType::Blue);
         let adjacent_types = board.unique_surrounding_building_types(7);
-        assert_eq!(adjacent_types, HashSet::from([BuildingType::Blue, BuildingType::Red]));
+        assert_eq!(
+            adjacent_types,
+            HashSet::from([BuildingType::Blue, BuildingType::Red])
+        );
 
         board.place(14, BuildingType::Green);
         let adjacent_types = board.unique_surrounding_building_types(7);
-        assert_eq!(adjacent_types, HashSet::from([BuildingType::Blue, BuildingType::Green, BuildingType::Red]));
-
+        assert_eq!(
+            adjacent_types,
+            HashSet::from([
+                BuildingType::Blue,
+                BuildingType::Green,
+                BuildingType::Red
+            ])
+        );
     }
 
     // -------------------------------------------------------------------------
@@ -526,18 +561,14 @@ mod tests {
         let count = board.count_adjacent_buildings(1, &HashSet::new());
         assert_eq!(count, 0);
 
-        let count = board.count_adjacent_buildings(
-            1,
-            &HashSet::from([BuildingType::Blue]),
-        );
+        let count = board
+            .count_adjacent_buildings(1, &HashSet::from([BuildingType::Blue]));
         assert_eq!(count, 1);
 
         board.place(1, BuildingType::Blue);
         board.place(4, BuildingType::Red);
-        let count = board.count_adjacent_buildings(
-            5,
-            &HashSet::from([BuildingType::Blue]),
-        );
+        let count = board
+            .count_adjacent_buildings(5, &HashSet::from([BuildingType::Blue]));
         assert_eq!(count, 1);
 
         let count = board.count_adjacent_buildings(
@@ -549,14 +580,14 @@ mod tests {
         board.place(6, BuildingType::Blue);
         let count = board.count_adjacent_buildings(
             5,
-            &HashSet::from([BuildingType::Blue, BuildingType::Red])
+            &HashSet::from([BuildingType::Blue, BuildingType::Red]),
         );
         assert_eq!(count, 3);
 
         board.place(9, BuildingType::Green);
         let count = board.count_adjacent_buildings(
             5,
-            &HashSet::from([BuildingType::Blue, BuildingType::Red])
+            &HashSet::from([BuildingType::Blue, BuildingType::Red]),
         );
         assert_eq!(count, 3);
 
@@ -565,8 +596,8 @@ mod tests {
             &HashSet::from([
                 BuildingType::Blue,
                 BuildingType::Green,
-                BuildingType::Red
-            ])
+                BuildingType::Red,
+            ]),
         );
         assert_eq!(count, 4);
     }
@@ -581,7 +612,9 @@ mod tests {
         board.place(3, BuildingType::Gray);
 
         let building_types = HashSet::from([
-            BuildingType::Green, BuildingType::Gray, BuildingType::Red
+            BuildingType::Green,
+            BuildingType::Gray,
+            BuildingType::Red,
         ]);
 
         let mut visited = vec![false; board.elems];
@@ -598,7 +631,10 @@ mod tests {
 
         board.place(4, BuildingType::Green);
         let building_types = HashSet::from([
-            BuildingType::Green, BuildingType::Gray, BuildingType::Red, BuildingType::Orange,
+            BuildingType::Green,
+            BuildingType::Gray,
+            BuildingType::Red,
+            BuildingType::Orange,
         ]);
         let mut visited = vec![false; board.elems];
         let group = board.contiguous_group(&building_types, &mut visited, 3);
@@ -621,19 +657,15 @@ mod tests {
 
         let building_types = HashSet::from([BuildingType::Blue]);
         let groups = board.contiguous_groups(&building_types);
-        let ans = vec![
-            HashSet::from([0, 1, 4]),
-            HashSet::from([3]),
-        ];
+        let ans = vec![HashSet::from([0, 1, 4]), HashSet::from([3])];
         let eq = groups.iter().all(|s| ans.contains(&s))
             && ans.iter().all(|s| groups.contains(&s));
         assert!(eq);
 
-        let building_types = HashSet::from([BuildingType::Blue, BuildingType::Magenta]);
+        let building_types =
+            HashSet::from([BuildingType::Blue, BuildingType::Magenta]);
         let groups = board.contiguous_groups(&building_types);
-        let ans = vec![
-            HashSet::from([0, 1, 2, 3, 4]),
-        ];
+        let ans = vec![HashSet::from([0, 1, 2, 3, 4])];
         let eq = groups.iter().all(|s| ans.contains(&s))
             && ans.iter().all(|s| groups.contains(&s));
         assert!(eq);
@@ -662,5 +694,4 @@ mod tests {
         assert_eq!(count_per_row, HashMap::from([(1, 1)]));
         assert_eq!(count_per_col, HashMap::from([(1, 1)]));
     }
-
 }

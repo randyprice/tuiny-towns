@@ -1,7 +1,7 @@
 use std::collections::{HashMap, HashSet};
 
-use crate::board::Board;
 use crate::board::space::BuildingType;
+use crate::board::Board;
 use crate::building_config::{BuildingConfig, MagentaBuilding};
 use crate::score::feed::feed;
 
@@ -13,6 +13,128 @@ pub mod green;
 pub mod magenta;
 pub mod orange;
 pub mod yellow;
+
+pub struct ScoringContext {
+    points_per_tailor_in_center: i32,
+    base_points_per_tailor: i32,
+    points_by_count_for_almshouses: HashMap<u32, i32>,
+    points_by_count_for_taverns: HashMap<u32, i32>,
+    points_per_abbey: i32,
+    points_per_unique_type_for_theaters: i32,
+    points_per_bakery: i32,
+    points_per_bank: i32,
+    points_per_fed_cottage: i32,
+    points_per_factory: i32,
+    points_per_feast_hall_with_equal_or_lesser_count: i32,
+    points_per_feast_hall_with_greater_count: i32,
+    points_per_fed_blue_building_for_chapels: i32,
+    points_per_fountain: i32,
+    points_per_inn: i32,
+    points_per_millstone: i32,
+    points_per_resource_on_warehouse: i32,
+    points_per_yellow_building_for_markets: i32,
+    points_per_shed: i32,
+    points_per_temple: i32,
+    points_per_trading_post: i32,
+    points_per_adjacent_blue_building_for_wells: i32,
+    points_per_cottage_with_grand_mausoleum_of_the_rodina: i32,
+    default_score_for_almshouses: i32,
+    default_score_for_taverns: i32,
+    points_per_architects_guild: i32,
+    points_per_unique_building_type_for_archive_of_the_second_age: i32,
+    points_per_unique_adjacent_building_type_for_mandras_palace: i32,
+    points_per_fed_barrett_castle: i32,
+    points_per_cathedral_of_caterina: i32,
+    points_per_fort_ironweed: i32,
+    points_per_grand_mausoleum_of_the_rodina: i32,
+    points_per_obelisk_of_the_crescent: i32,
+    points_per_opaleyes_watch: i32,
+    points_per_statue_of_the_bondmaker: i32,
+    points_per_grove_university: i32,
+    base_points_per_silva_forum: i32,
+    points_per_building_in_largest_contiguous_group_for_silva_forum: i32,
+    points_per_missing_building_type_for_the_sky_baths: i32,
+    adjacent_building_types_for_abbeys: HashSet<BuildingType>,
+    points_per_cloister_in_corner: i32,
+    equivalent_num_of_blue_buildings_for_barrett_castle: u32,
+    min_adjacent_blue_buildings_to_score_temple: u32,
+    adjacent_building_types_for_bakeries: HashSet<BuildingType>,
+    points_per_unused_space_with_cathedral_of_caterina: i32,
+    points_per_unused_space: i32,
+}
+
+impl ScoringContext {
+    pub fn default() -> Self {
+        Self {
+            points_per_tailor_in_center: 1,
+            base_points_per_tailor: 1,
+            points_by_count_for_almshouses: HashMap::from([
+                (0, 0),
+                (1, -1),
+                (2, 5),
+                (3, -3),
+                (4, 15),
+                (5, -5),
+            ]),
+            points_by_count_for_taverns: HashMap::from([
+                (0, 0),
+                (1, 2),
+                (2, 5),
+                (3, 9),
+                (4, 14),
+            ]),
+            points_per_abbey: 3,
+            points_per_unique_type_for_theaters: 1,
+            points_per_bakery: 3,
+            points_per_bank: 4,
+            points_per_fed_cottage: 3,
+            points_per_factory: 0,
+            points_per_feast_hall_with_equal_or_lesser_count: 2,
+            points_per_feast_hall_with_greater_count: 3,
+            points_per_fed_blue_building_for_chapels: 1,
+            points_per_fountain: 2,
+            points_per_inn: 3,
+            points_per_millstone: 2,
+            points_per_resource_on_warehouse: -1,
+            points_per_yellow_building_for_markets: 1,
+            points_per_shed: 1,
+            points_per_temple: 4,
+            points_per_trading_post: 1,
+            points_per_adjacent_blue_building_for_wells: 1,
+            points_per_cottage_with_grand_mausoleum_of_the_rodina: 3,
+            default_score_for_almshouses: 26,
+            default_score_for_taverns: 20,
+            points_per_architects_guild: 1,
+            points_per_unique_building_type_for_archive_of_the_second_age: 1,
+            points_per_unique_adjacent_building_type_for_mandras_palace: 2,
+            points_per_fed_barrett_castle: 5,
+            points_per_cathedral_of_caterina: 2,
+            points_per_fort_ironweed: 7,
+            points_per_grand_mausoleum_of_the_rodina: 0,
+            points_per_obelisk_of_the_crescent: 0,
+            points_per_opaleyes_watch: 0,
+            points_per_statue_of_the_bondmaker: 0,
+            points_per_grove_university: 3,
+            base_points_per_silva_forum: 1,
+            points_per_building_in_largest_contiguous_group_for_silva_forum: 1,
+            points_per_missing_building_type_for_the_sky_baths: 2,
+            adjacent_building_types_for_abbeys: HashSet::from([
+                BuildingType::Black,
+                BuildingType::Green,
+                BuildingType::Yellow,
+            ]),
+            points_per_cloister_in_corner: 1,
+            equivalent_num_of_blue_buildings_for_barrett_castle: 2,
+            min_adjacent_blue_buildings_to_score_temple: 2,
+            adjacent_building_types_for_bakeries: HashSet::from([
+                BuildingType::Black,
+                BuildingType::Red,
+            ]),
+            points_per_unused_space_with_cathedral_of_caterina: 0,
+            points_per_unused_space: -1,
+        }
+    }
+}
 
 // =============================================================================
 /// A `ScoreCard`.
@@ -38,7 +160,10 @@ impl ScoreCard {
     // Public functions
     /// Combine the `ScoreCard`'s fields into a single `HashMap`.
     pub fn flatten(&self) -> HashMap<usize, i32> {
-        let flattened: HashMap<usize, i32> = self.black.clone().into_iter()
+        let flattened: HashMap<usize, i32> = self
+            .black
+            .clone()
+            .into_iter()
             .chain(self.blue.clone())
             .chain(self.gray.clone())
             .chain(self.green.clone())
@@ -67,32 +192,49 @@ impl ScoreCard {
     }
 
     /// Return the total score of all black buildings.
-    pub fn score_black(&self) -> i32 { self.score(&self.black) }
+    pub fn score_black(&self) -> i32 {
+        self.score(&self.black)
+    }
 
     /// Return the total score of all blue buildings.
-    pub fn score_blue(&self) -> i32 { self.score(&self.blue) }
+    pub fn score_blue(&self) -> i32 {
+        self.score(&self.blue)
+    }
 
     /// Return the total score of all gray buildings.
-    pub fn score_gray(&self) -> i32 { self.score(&self.gray) }
+    pub fn score_gray(&self) -> i32 {
+        self.score(&self.gray)
+    }
 
     /// Return the total score of all green buildings.
-    pub fn score_green(&self) -> i32 { self.score(&self.green) }
+    pub fn score_green(&self) -> i32 {
+        self.score(&self.green)
+    }
 
     /// Return the total score of all magenta buildings.
-    pub fn score_magenta(&self) -> i32 { self.score(&self.magenta) }
+    pub fn score_magenta(&self) -> i32 {
+        self.score(&self.magenta)
+    }
 
     /// Return the total score of all orange buildings.
-    pub fn score_orange(&self) -> i32 { self.score(&self.orange) }
+    pub fn score_orange(&self) -> i32 {
+        self.score(&self.orange)
+    }
 
     /// Return the total score of all red buildings.
-    pub fn score_red(&self) -> i32 { self.score(&self.red) }
+    pub fn score_red(&self) -> i32 {
+        self.score(&self.red)
+    }
 
     /// Return the total score of all yellow buildings.
-    pub fn score_yellow(&self) -> i32 { self.score(&self.yellow) }
+    pub fn score_yellow(&self) -> i32 {
+        self.score(&self.yellow)
+    }
 
     /// Return the total score of all unused spaces.
-    pub fn score_unused(&self) -> i32 { self.score(&self.unused) }
-
+    pub fn score_unused(&self) -> i32 {
+        self.score(&self.unused)
+    }
 }
 
 // -----------------------------------------------------------------------------
@@ -107,23 +249,24 @@ fn score_by_adjacency(
     adjacent_types: &HashSet<BuildingType>,
     points: i32,
 ) -> HashMap<usize, i32> {
-    let scores = board.spaces()
-        .iter()
-        .enumerate()
-        .fold(HashMap::new(), |mut m, (idx, space)| {
-                if space.building_type_eq(building_type) {
-                    let points_scored =
-                        if board.unique_adjacent_building_types(idx)
-                            .is_disjoint(&adjacent_types)
-                        == is_disjoint {
-                            points
-                        } else {
-                            0
-                        };
-                    m.insert(idx, points_scored);
-                }
-                m
-            });
+    let scores = board.spaces().iter().enumerate().fold(
+        HashMap::new(),
+        |mut m, (idx, space)| {
+            if space.building_type_eq(building_type) {
+                let points_scored = if board
+                    .unique_adjacent_building_types(idx)
+                    .is_disjoint(&adjacent_types)
+                    == is_disjoint
+                {
+                    points
+                } else {
+                    0
+                };
+                m.insert(idx, points_scored);
+            }
+            m
+        },
+    );
 
     scores
 }
@@ -142,10 +285,9 @@ fn score_by_count(
     assert_eq!(points_by_count.get(&0).copied().unwrap(), 0);
     let count = board.count_building_type(building_type);
     let points = *points_by_count.get(&count).unwrap_or(&default);
-    let scores = board.spaces()
-        .iter()
-        .enumerate()
-        .fold(HashMap::new(), |mut m, (idx, space)| {
+    let scores = board.spaces().iter().enumerate().fold(
+        HashMap::new(),
+        |mut m, (idx, space)| {
             if space.building_type_eq(building_type) {
                 if m.len() == 0 {
                     m.insert(idx, points);
@@ -154,7 +296,8 @@ fn score_by_count(
                 }
             }
             m
-        });
+        },
+    );
 
     scores
 }
@@ -168,13 +311,8 @@ fn score_if_adjacent_to(
     adjacent_types: &HashSet<BuildingType>,
     points: i32,
 ) -> HashMap<usize, i32> {
-    let scores = score_by_adjacency(
-        false,
-        board,
-        building_type,
-        adjacent_types,
-        points
-    );
+    let scores =
+        score_by_adjacency(false, board, building_type, adjacent_types, points);
 
     scores
 }
@@ -185,12 +323,11 @@ fn score_if_in_idx_set(
     board: &Board,
     idxs: &HashSet<usize>,
     building_type: BuildingType,
-    points: i32
+    points: i32,
 ) -> HashMap<usize, i32> {
-    let scores = board.spaces()
-        .iter()
-        .enumerate()
-        .fold(HashMap::new(), |mut m, (idx, space)| {
+    let scores = board.spaces().iter().enumerate().fold(
+        HashMap::new(),
+        |mut m, (idx, space)| {
             if space.building_type_eq(building_type) {
                 if idxs.contains(&idx) {
                     m.insert(idx, points);
@@ -199,7 +336,8 @@ fn score_if_in_idx_set(
                 }
             }
             m
-        });
+        },
+    );
 
     scores
 }
@@ -213,13 +351,8 @@ fn score_if_not_adjacent_to(
     adjacent_types: &HashSet<BuildingType>,
     points: i32,
 ) -> HashMap<usize, i32> {
-    let scores = score_by_adjacency(
-        true,
-        board,
-        building_type,
-        adjacent_types,
-        points
-    );
+    let scores =
+        score_by_adjacency(true, board, building_type, adjacent_types, points);
 
     scores
 }
@@ -229,17 +362,17 @@ fn score_if_not_adjacent_to(
 fn score_per_each(
     board: &Board,
     building_type: BuildingType,
-    points: i32
+    points: i32,
 ) -> HashMap<usize, i32> {
-    let scores = board.spaces()
-        .iter()
-        .enumerate()
-        .fold(HashMap::new(), |mut m, (idx, space)| {
+    let scores = board.spaces().iter().enumerate().fold(
+        HashMap::new(),
+        |mut m, (idx, space)| {
             if space.building_type_eq(building_type) {
                 m.insert(idx, points);
             }
             m
-        });
+        },
+    );
 
     scores
 }
@@ -249,24 +382,26 @@ fn score_per_each(
 fn score_unused_spaces(
     board: &Board,
     building_config: &BuildingConfig,
+    scoring_context: &ScoringContext,
 ) -> HashMap<usize, i32> {
-    let points =
-        if building_config.magenta() == MagentaBuilding::CathedralOfCaterina
-        && board.count_building_type(BuildingType::Magenta) > 0 {
-            0
-        } else {
-            -1
-        };
+    let points = if building_config.magenta()
+        == MagentaBuilding::CathedralOfCaterina
+        && board.count_building_type(BuildingType::Magenta) > 0
+    {
+        scoring_context.points_per_unused_space_with_cathedral_of_caterina
+    } else {
+        scoring_context.points_per_unused_space
+    };
 
-    let scores = board.spaces()
-        .iter()
-        .enumerate()
-        .fold(HashMap::new(), |mut scores, (idx, space)| {
+    let scores = board.spaces().iter().enumerate().fold(
+        HashMap::new(),
+        |mut scores, (idx, space)| {
             if space.is_unused() {
                 scores.insert(idx, points);
             }
             scores
-        });
+        },
+    );
 
     scores
 }
@@ -275,19 +410,30 @@ fn score_unused_spaces(
 pub fn score(
     board: &Board,
     building_config: &BuildingConfig,
+    scoring_context: &ScoringContext,
     other: Option<&Board>,
 ) -> ScoreCard {
-    let fed_idxs = feed(board, building_config);
+    let fed_idxs = feed(board, building_config, scoring_context);
     let score_card = ScoreCard {
-        black: black::score(board, building_config),
-        blue: blue::score(board, building_config, &fed_idxs),
-        gray: gray::score(board, building_config),
-        green: green::score(board, building_config, other),
-        magenta: magenta::score(board, building_config, &fed_idxs),
-        orange: orange::score(board, building_config, &fed_idxs),
+        black: black::score(board, building_config, scoring_context),
+        blue: blue::score(board, building_config, scoring_context, &fed_idxs),
+        gray: gray::score(board, building_config, scoring_context),
+        green: green::score(board, building_config, scoring_context, other),
+        magenta: magenta::score(
+            board,
+            building_config,
+            scoring_context,
+            &fed_idxs,
+        ),
+        orange: orange::score(
+            board,
+            building_config,
+            scoring_context,
+            &fed_idxs,
+        ),
         red: score_per_each(board, BuildingType::Red, 0),
-        yellow: yellow::score(board, building_config),
-        unused: score_unused_spaces(board, building_config),
+        yellow: yellow::score(board, building_config, scoring_context),
+        unused: score_unused_spaces(board, building_config, scoring_context),
     };
 
     score_card
@@ -300,7 +446,7 @@ mod test {
     use crate::board::space::Resource;
     use crate::building_config::{
         BlackBuilding, BlueBuilding, GrayBuilding, GreenBuilding,
-        MagentaBuilding, OrangeBuilding, RedBuilding, YellowBuilding
+        MagentaBuilding, OrangeBuilding, RedBuilding, YellowBuilding,
     };
 
     // -------------------------------------------------------------------------
@@ -309,10 +455,8 @@ mod test {
         let mut board = Board::new(4, 4);
         let is_disjoint = false;
         let building_type = BuildingType::Blue;
-        let adjacent_types = HashSet::from([
-            BuildingType::Orange,
-            BuildingType::Yellow
-        ]);
+        let adjacent_types =
+            HashSet::from([BuildingType::Orange, BuildingType::Yellow]);
         let points = 2;
 
         let result = score_by_adjacency(
@@ -402,71 +546,42 @@ mod test {
         );
         let expected = HashMap::from([(0, 0), (2, 2)]);
         assert_eq!(result, expected);
-
     }
 
     // -------------------------------------------------------------------------
     #[test]
     fn test_score_by_count() {
         let mut board = Board::new(4, 4);
-        let points_by_count = HashMap::from([
-            (0, 0),
-            (2, -3),
-            (3, 43),
-        ]);
+        let points_by_count = HashMap::from([(0, 0), (2, -3), (3, 43)]);
         let default = 9;
         let building_type = BuildingType::Red;
-        let result = score_by_count(
-            &board,
-            building_type,
-            &points_by_count,
-            default,
-        );
+        let result =
+            score_by_count(&board, building_type, &points_by_count, default);
         assert!(result.is_empty());
 
         board.place(0, BuildingType::Blue);
-        let result = score_by_count(
-            &board,
-            building_type,
-            &points_by_count,
-            default,
-        );
+        let result =
+            score_by_count(&board, building_type, &points_by_count, default);
         assert!(result.is_empty());
 
         board.place(1, BuildingType::Red);
-        let result = score_by_count(
-            &board,
-            building_type,
-            &points_by_count,
-            default,
-        );
+        let result =
+            score_by_count(&board, building_type, &points_by_count, default);
         assert_eq!(result, HashMap::from([(1, 9)]));
 
         board.place(2, BuildingType::Red);
-        let result = score_by_count(
-            &board,
-            building_type,
-            &points_by_count,
-            default,
-        );
+        let result =
+            score_by_count(&board, building_type, &points_by_count, default);
         assert_eq!(result, HashMap::from([(1, -3), (2, 0)]));
 
         board.place(3, BuildingType::Red);
-        let result = score_by_count(
-            &board,
-            building_type,
-            &points_by_count,
-            default,
-        );
+        let result =
+            score_by_count(&board, building_type, &points_by_count, default);
         assert_eq!(result, HashMap::from([(1, 43), (2, 0), (3, 0)]));
 
         board.place(4, BuildingType::Red);
-        let result = score_by_count(
-            &board,
-            building_type,
-            &points_by_count,
-            default,
-        );
+        let result =
+            score_by_count(&board, building_type, &points_by_count, default);
         assert_eq!(result, HashMap::from([(1, 9), (2, 0), (3, 0), (4, 0)]));
     }
 
@@ -475,10 +590,8 @@ mod test {
     fn test_score_if_adjacent_to() {
         let mut board = Board::new(4, 4);
         let building_type = BuildingType::Black;
-        let adjacent_types = HashSet::from([
-            BuildingType::Orange,
-            BuildingType::Yellow
-        ]);
+        let adjacent_types =
+            HashSet::from([BuildingType::Orange, BuildingType::Yellow]);
         let points = 3;
         let result = score_if_adjacent_to(
             &board,
@@ -558,10 +671,8 @@ mod test {
     fn test_score_if_not_adjacent_to() {
         let mut board = Board::new(4, 4);
         let building_type = BuildingType::Green;
-        let adjacent_types = HashSet::from([
-            BuildingType::Blue,
-            BuildingType::Gray
-        ]);
+        let adjacent_types =
+            HashSet::from([BuildingType::Blue, BuildingType::Gray]);
         let points = 5;
         let result = score_if_not_adjacent_to(
             &board,
@@ -635,6 +746,7 @@ mod test {
     // -------------------------------------------------------------------------
     #[test]
     fn test_score_unused_spaces() {
+        let scoring_context = ScoringContext::default();
         let mut board = Board::new(4, 4);
 
         // Without Cathedral of Caterina.
@@ -651,18 +763,32 @@ mod test {
         for idx in 0..board.elems() {
             board.place(idx, BuildingType::Red);
         }
-        assert!(score_unused_spaces(&board, &building_config).is_empty());
+        assert!(score_unused_spaces(
+            &board,
+            &building_config,
+            &scoring_context
+        )
+        .is_empty());
 
         board.place(0, Resource::Stone);
         let expected = HashMap::from([(0, -1)]);
-        assert_eq!(score_unused_spaces(&board, &building_config), expected);
+        assert_eq!(
+            score_unused_spaces(&board, &building_config, &scoring_context),
+            expected
+        );
 
         board.place(1, Resource::Stone);
         let expected = HashMap::from([(0, -1), (1, -1)]);
-        assert_eq!(score_unused_spaces(&board, &building_config), expected);
+        assert_eq!(
+            score_unused_spaces(&board, &building_config, &scoring_context),
+            expected
+        );
 
         board.place(2, BuildingType::Magenta);
-        assert_eq!(score_unused_spaces(&board, &building_config), expected);
+        assert_eq!(
+            score_unused_spaces(&board, &building_config, &scoring_context),
+            expected
+        );
 
         // With Cathedral of Caterina.
         let building_config = BuildingConfig::new(
@@ -676,18 +802,21 @@ mod test {
             YellowBuilding::Theater,
         );
         board.place(2, BuildingType::Blue);
-        assert_eq!(score_unused_spaces(&board, &building_config), expected);
+        assert_eq!(
+            score_unused_spaces(&board, &building_config, &scoring_context),
+            expected
+        );
 
         board.place(3, BuildingType::Magenta);
         let expected = HashMap::from([(0, 0), (1, 0)]);
-        assert_eq!(score_unused_spaces(&board, &building_config), expected);
+        assert_eq!(
+            score_unused_spaces(&board, &building_config, &scoring_context),
+            expected
+        );
     }
 
     // -------------------------------------------------------------------------
     #[test]
     #[ignore]
-    fn test_score() {
-
-    }
-
+    fn test_score() {}
 }

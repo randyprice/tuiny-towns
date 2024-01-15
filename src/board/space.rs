@@ -6,7 +6,7 @@ pub enum Resource {
     Glass,
     Stone,
     Wheat,
-    Wood
+    Wood,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, Eq, Hash, PartialEq)]
@@ -38,9 +38,10 @@ impl Space {
             Space::Building(building_type)
             | Space::BuildingWithOptResource(building_type, _)
             | Space::BuildingWithResource(building_type, _)
-            | Space::BuildingWithResources(building_type, _) =>
-                Some(*building_type),
-            _ => None
+            | Space::BuildingWithResources(building_type, _) => {
+                Some(*building_type)
+            }
+            _ => None,
         };
 
         building_type_opt
@@ -48,12 +49,11 @@ impl Space {
 
     // -------------------------------------------------------------------------
     pub fn building_type_eq(&self, building_type: BuildingType) -> bool {
-        let eq =
-            if let Some(my_building_type) = self.building_type() {
-                my_building_type == building_type
-            } else {
-                false
-            };
+        let eq = if let Some(my_building_type) = self.building_type() {
+            my_building_type == building_type
+        } else {
+            false
+        };
 
         eq
     }

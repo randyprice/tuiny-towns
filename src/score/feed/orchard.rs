@@ -1,21 +1,24 @@
 use std::collections::HashSet;
 
-use crate::board::Board;
 use crate::board::space::BuildingType;
+use crate::board::Board;
 use crate::building_config::BuildingConfig;
 use crate::score::feed::feedable_idxs;
 
 // -----------------------------------------------------------------------------
 pub fn feed(board: &Board, building_config: &BuildingConfig) -> HashSet<usize> {
-    let fed_idxs = feedable_idxs(board, building_config)
-        .into_iter()
-        .fold(HashSet::new(), |mut fed_idxs, idx| {
-            if board.unique_surrounding_building_types(idx)
-                .contains(&BuildingType::Red) {
-                    fed_idxs.insert(idx);
+    let fed_idxs = feedable_idxs(board, building_config).into_iter().fold(
+        HashSet::new(),
+        |mut fed_idxs, idx| {
+            if board
+                .unique_surrounding_building_types(idx)
+                .contains(&BuildingType::Red)
+            {
+                fed_idxs.insert(idx);
             }
             fed_idxs
-        });
+        },
+    );
 
     fed_idxs
 }
@@ -26,13 +29,12 @@ mod test {
     use super::*;
     use crate::building_config::{
         BlackBuilding, BlueBuilding, GrayBuilding, GreenBuilding,
-        MagentaBuilding, OrangeBuilding, RedBuilding, YellowBuilding
+        MagentaBuilding, OrangeBuilding, RedBuilding, YellowBuilding,
     };
 
     // -------------------------------------------------------------------------
     #[test]
     fn test_feed() {
-
         let mut board = Board::new(4, 4);
         // Without Barrett Castle.
         let building_config = BuildingConfig::new(

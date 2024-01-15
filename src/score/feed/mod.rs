@@ -1,9 +1,9 @@
 use std::collections::HashSet;
 
-use crate::board::Board;
 use crate::board::space::{BuildingType, Space};
+use crate::board::Board;
 use crate::building_config::{BuildingConfig, MagentaBuilding, RedBuilding};
-use crate::score::{blue, magenta, orange};
+use crate::score::{blue, magenta, orange, ScoringContext};
 
 pub mod farm;
 pub mod granary;
@@ -14,7 +14,7 @@ pub mod orchard;
 fn is_feedable(building_config: &BuildingConfig, space: &Space) -> bool {
     let is_feedable = space.building_type_eq(BuildingType::Blue)
         || (space.building_type_eq(BuildingType::Magenta)
-                && building_config.magenta() == MagentaBuilding::BarrettCastle);
+            && building_config.magenta() == MagentaBuilding::BarrettCastle);
 
     is_feedable
 }
@@ -24,32 +24,53 @@ fn feedable_idxs(
     board: &Board,
     building_config: &BuildingConfig,
 ) -> HashSet<usize> {
-    let feedable_idxs = board.spaces()
-        .iter()
-        .enumerate()
-        .fold(HashSet::new(), |mut s, (idx, space)| {
+    let feedable_idxs = board.spaces().iter().enumerate().fold(
+        HashSet::new(),
+        |mut s, (idx, space)| {
             if is_feedable(building_config, space) {
                 s.insert(idx);
             }
             s
-        });
+        },
+    );
 
     feedable_idxs
 }
-
-
 
 // -----------------------------------------------------------------------------
 fn best_fed_idxs(
     board: &Board,
     building_config: &BuildingConfig,
+    scoring_context: &ScoringContext,
     permutations: Vec<HashSet<usize>>,
 ) -> HashSet<usize> {
-    let best_fed_idxs = permutations.iter()
+    let best_fed_idxs = permutations
+        .iter()
         .fold((HashSet::new(), 0), |(best, max), permutation| {
-            let score = blue::score(board, building_config, permutation).values().sum::<i32>()
-                + orange::score(board, building_config, permutation).values().sum::<i32>()
-                + magenta::score(board, building_config, permutation).values().sum::<i32>() as i32;
+            let score = blue::score(
+                board,
+                building_config,
+                scoring_context,
+                permutation,
+            )
+            .values()
+            .sum::<i32>()
+                + orange::score(
+                    board,
+                    building_config,
+                    scoring_context,
+                    permutation,
+                )
+                .values()
+                .sum::<i32>()
+                + magenta::score(
+                    board,
+                    building_config,
+                    scoring_context,
+                    permutation,
+                )
+                .values()
+                .sum::<i32>() as i32;
             if score > max {
                 (permutation.clone(), score)
             } else {
@@ -58,15 +79,23 @@ fn best_fed_idxs(
         })
         .0;
 
-        best_fed_idxs
+    best_fed_idxs
 }
 
 // -----------------------------------------------------------------------------
-pub fn feed(board: &Board, building_config: &BuildingConfig) -> HashSet<usize> {
+pub fn feed(
+    board: &Board,
+    building_config: &BuildingConfig,
+    scoring_context: &ScoringContext,
+) -> HashSet<usize> {
     let fed_idxs = match building_config.red() {
-        RedBuilding::Farm => farm::feed(board, building_config),
+        RedBuilding::Farm => {
+            farm::feed(board, building_config, scoring_context)
+        }
         RedBuilding::Granary => granary::feed(board, building_config),
-        RedBuilding::Greenhouse => greenhouse::feed(board, building_config),
+        RedBuilding::Greenhouse => {
+            greenhouse::feed(board, building_config, scoring_context)
+        }
         RedBuilding::Orchard => orchard::feed(board, building_config),
     };
 
@@ -79,7 +108,7 @@ mod test {
     use super::*;
     use crate::building_config::{
         BlackBuilding, BlueBuilding, GrayBuilding, GreenBuilding,
-        MagentaBuilding, OrangeBuilding, RedBuilding, YellowBuilding
+        MagentaBuilding, OrangeBuilding, RedBuilding, YellowBuilding,
     };
 
     // -------------------------------------------------------------------------
@@ -107,7 +136,10 @@ mod test {
         board.place(19, BuildingType::Black);
         board.place(21, BuildingType::Red);
         board.place(24, BuildingType::Magenta);
-        assert_eq!(feedable_idxs(&board, &building_config), HashSet::from([0, 7, 14]));
+        assert_eq!(
+            feedable_idxs(&board, &building_config),
+            HashSet::from([0, 7, 14])
+        );
 
         // Map with Barrett Castle.
         let building_config = BuildingConfig::new(
@@ -120,6 +152,9 @@ mod test {
             RedBuilding::Farm,
             YellowBuilding::Theater,
         );
-        assert_eq!(feedable_idxs(&board, &building_config), HashSet::from([0, 7, 14, 24]));
+        assert_eq!(
+            feedable_idxs(&board, &building_config),
+            HashSet::from([0, 7, 14, 24])
+        );
     }
 }

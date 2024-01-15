@@ -1,34 +1,34 @@
 use std::collections::HashSet;
 
-use crate::board::Board;
 use crate::board::space::BuildingType;
+use crate::board::Board;
 use crate::building_config::BuildingConfig;
 use crate::score::feed::feedable_idxs;
 
 // -----------------------------------------------------------------------------
 pub fn feed(board: &Board, building_config: &BuildingConfig) -> HashSet<usize> {
-    let (fed_rows, fed_cols) = board.spaces()
-        .iter()
-        .enumerate()
-        .fold(
-            (HashSet::new(), HashSet::new()),
-            |(mut fed_rows, mut fed_cols), (idx, space)| {
-                if space.building_type_eq(BuildingType::Red) {
-                    fed_rows.insert(board.row(idx));
-                    fed_cols.insert(board.col(idx));
-                }
-                (fed_rows, fed_cols)
-        });
+    let (fed_rows, fed_cols) = board.spaces().iter().enumerate().fold(
+        (HashSet::new(), HashSet::new()),
+        |(mut fed_rows, mut fed_cols), (idx, space)| {
+            if space.building_type_eq(BuildingType::Red) {
+                fed_rows.insert(board.row(idx));
+                fed_cols.insert(board.col(idx));
+            }
+            (fed_rows, fed_cols)
+        },
+    );
 
-    let fed_idxs = feedable_idxs(board, building_config)
-        .into_iter()
-        .fold(HashSet::new(), |mut fed_idxs, idx| {
+    let fed_idxs = feedable_idxs(board, building_config).into_iter().fold(
+        HashSet::new(),
+        |mut fed_idxs, idx| {
             if fed_rows.contains(&board.row(idx))
-            || fed_cols.contains(&board.col(idx)) {
+                || fed_cols.contains(&board.col(idx))
+            {
                 fed_idxs.insert(idx);
             }
             fed_idxs
-        });
+        },
+    );
 
     fed_idxs
 }
@@ -39,7 +39,7 @@ mod test {
     use super::*;
     use crate::building_config::{
         BlackBuilding, BlueBuilding, GrayBuilding, GreenBuilding,
-        MagentaBuilding, OrangeBuilding, RedBuilding, YellowBuilding
+        MagentaBuilding, OrangeBuilding, RedBuilding, YellowBuilding,
     };
 
     // -------------------------------------------------------------------------

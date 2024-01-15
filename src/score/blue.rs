@@ -1,23 +1,35 @@
 use std::collections::{HashMap, HashSet};
 
-use crate::board::Board;
 use crate::board::space::BuildingType;
+use crate::board::Board;
 use crate::building_config::{BlueBuilding, BuildingConfig, MagentaBuilding};
-use crate::score::{score_if_in_idx_set, score_per_each};
+use crate::score::{score_if_in_idx_set, score_per_each, ScoringContext};
 
 // -----------------------------------------------------------------------------
 fn score_cottages(
     board: &Board,
     building_config: &BuildingConfig,
+    scoring_context: &ScoringContext,
     fed_idxs: &HashSet<usize>,
 ) -> HashMap<usize, i32> {
-    let scores =
-        if building_config.magenta() == MagentaBuilding::GrandMausoleumOfTheRodina
-        && board.count_building_type(BuildingType::Magenta) > 0 {
-            score_per_each(board, BuildingType::Blue, 3)
-        } else {
-            score_if_in_idx_set(board, fed_idxs, BuildingType::Blue, 3)
-        };
+    let scores = if building_config.magenta()
+        == MagentaBuilding::GrandMausoleumOfTheRodina
+        && board.count_building_type(BuildingType::Magenta) > 0
+    {
+        score_per_each(
+            board,
+            BuildingType::Blue,
+            scoring_context
+                .points_per_cottage_with_grand_mausoleum_of_the_rodina,
+        )
+    } else {
+        score_if_in_idx_set(
+            board,
+            fed_idxs,
+            BuildingType::Blue,
+            scoring_context.points_per_fed_cottage,
+        )
+    };
 
     scores
 }
@@ -26,11 +38,12 @@ fn score_cottages(
 pub fn score(
     board: &Board,
     building_config: &BuildingConfig,
+    scoring_context: &ScoringContext,
     fed_idxs: &HashSet<usize>,
 ) -> HashMap<usize, i32> {
     let score = match building_config.blue() {
         BlueBuilding::Cottage => {
-            score_cottages(board, building_config, fed_idxs)
+            score_cottages(board, building_config, scoring_context, fed_idxs)
         }
     };
 
@@ -43,12 +56,13 @@ mod test {
     use super::*;
     use crate::building_config::{
         BlackBuilding, BlueBuilding, GrayBuilding, GreenBuilding,
-        MagentaBuilding, OrangeBuilding, RedBuilding, YellowBuilding
+        MagentaBuilding, OrangeBuilding, RedBuilding, YellowBuilding,
     };
 
     // -------------------------------------------------------------------------
     #[test]
     fn test_score_cottages() {
+        let scoring_context = ScoringContext::default();
         // Without Mausoleum.
         let building_config = BuildingConfig::new(
             BlackBuilding::Factory,
@@ -72,18 +86,42 @@ mod test {
         board.place(21, BuildingType::Red);
         board.place(24, BuildingType::Magenta);
         let fed_idxs = HashSet::from([0, 1, 14]);
-        let ans = HashMap::from([(0, 3), (1, 3), (14, 3)]);
-        assert_eq!(score_cottages(&board, &building_config, &fed_idxs), ans);
+        let expected = HashMap::from([(0, 3), (1, 3), (14, 3)]);
+        assert_eq!(
+            score_cottages(
+                &board,
+                &building_config,
+                &scoring_context,
+                &fed_idxs,
+            ),
+            expected,
+        );
 
         // Add another cottage without feeding it.
         board.place(11, BuildingType::Blue);
-        let ans = HashMap::from([(0, 3), (1, 3), (11, 0), (14, 3)]);
-        assert_eq!(score_cottages(&board, &building_config, &fed_idxs), ans);
+        let expected = HashMap::from([(0, 3), (1, 3), (11, 0), (14, 3)]);
+        assert_eq!(
+            score_cottages(
+                &board,
+                &building_config,
+                &scoring_context,
+                &fed_idxs
+            ),
+            expected
+        );
 
         // Feed the added cottage.
         let fed_idxs = HashSet::from([0, 1, 11, 14]);
-        let ans = HashMap::from([(0, 3), (1, 3), (11, 3), (14, 3)]);
-        assert_eq!(score_cottages(&board, &building_config, &fed_idxs), ans);
+        let expected = HashMap::from([(0, 3), (1, 3), (11, 3), (14, 3)]);
+        assert_eq!(
+            score_cottages(
+                &board,
+                &building_config,
+                &scoring_context,
+                &fed_idxs
+            ),
+            expected
+        );
 
         // With Mausoleum.
         let building_config = BuildingConfig::new(
@@ -98,6 +136,14 @@ mod test {
         );
         // Feed only one cottage.
         let fed_idxs = HashSet::from([0]);
-        assert_eq!(score_cottages(&board, &building_config, &fed_idxs), ans);
+        assert_eq!(
+            score_cottages(
+                &board,
+                &building_config,
+                &scoring_context,
+                &fed_idxs
+            ),
+            expected
+        );
     }
 }

@@ -2,8 +2,12 @@ use std::collections::HashSet;
 use std::hash::Hash;
 
 // -----------------------------------------------------------------------------
-pub fn vec_hashset_eq<T>(some: &Vec<HashSet<T>>, other: &Vec<HashSet<T>>) -> bool
-where T: Copy + Eq + Hash
+pub fn vec_hashset_eq<T>(
+    some: &Vec<HashSet<T>>,
+    other: &Vec<HashSet<T>>,
+) -> bool
+where
+    T: Copy + Eq + Hash,
 {
     let eq = some.iter().all(|s| other.contains(s))
         && other.iter().all(|s| some.contains(s));
@@ -27,21 +31,18 @@ mod test {
         let other = vec![
             HashSet::from([]),
             HashSet::from([2, 1, 0]),
-            HashSet::from([4])
+            HashSet::from([4]),
         ];
         assert!(vec_hashset_eq(&some, &other));
 
         let other = vec![
             HashSet::from([]),
             HashSet::from([2, 1, 0]),
-            HashSet::from([3])
+            HashSet::from([3]),
         ];
         assert!(!vec_hashset_eq(&some, &other));
 
-        let other = vec![
-            HashSet::from([]),
-            HashSet::from([2, 1, 0]),
-        ];
+        let other = vec![HashSet::from([]), HashSet::from([2, 1, 0])];
         assert!(!vec_hashset_eq(&some, &other));
     }
 }

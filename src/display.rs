@@ -2,11 +2,12 @@ use std::collections::HashMap;
 
 use colored::{ColoredString, Colorize};
 
-use crate::board::Board;
 use crate::board::space::{BuildingType, Space};
-use crate::building_config::{BlackBuilding, BlueBuilding, BuildingConfig,
-    GrayBuilding, GreenBuilding, MagentaBuilding, OrangeBuilding, RedBuilding,
-    YellowBuilding};
+use crate::board::Board;
+use crate::building_config::{
+    BlackBuilding, BlueBuilding, BuildingConfig, GrayBuilding, GreenBuilding,
+    MagentaBuilding, OrangeBuilding, RedBuilding, YellowBuilding,
+};
 use crate::score::ScoreCard;
 
 // =============================================================================
@@ -35,7 +36,6 @@ impl BlueBuilding {
     }
     fn to_plural_string(&self) -> String {
         format!("{}s", self.to_string())
-
     }
 }
 
@@ -46,7 +46,6 @@ impl GrayBuilding {
             GrayBuilding::Millstone => String::from("Millstone"),
             GrayBuilding::Shed => String::from("Shed"),
             GrayBuilding::Well => String::from("Well"),
-
         }
     }
 
@@ -62,7 +61,6 @@ impl GreenBuilding {
             GreenBuilding::FeastHall => String::from("Feast Hall"),
             GreenBuilding::Inn => String::from("Inn"),
             GreenBuilding::Tavern => String::from("Tavern"),
-
         }
     }
 
@@ -74,19 +72,35 @@ impl GreenBuilding {
 impl MagentaBuilding {
     fn to_string(&self) -> String {
         match self {
-            MagentaBuilding::ArchitectsGuild => String::from("Architect's Guild"),
-            MagentaBuilding::ArchiveOfTheSecondAge => String::from("Archive of the Second Age"),
+            MagentaBuilding::ArchitectsGuild => {
+                String::from("Architect's Guild")
+            }
+            MagentaBuilding::ArchiveOfTheSecondAge => {
+                String::from("Archive of the Second Age")
+            }
             MagentaBuilding::BarrettCastle => String::from("Barrett Castle"),
-            MagentaBuilding::CathedralOfCaterina => String::from("Cathedral of Caterina"),
+            MagentaBuilding::CathedralOfCaterina => {
+                String::from("Cathedral of Caterina")
+            }
             MagentaBuilding::FortIronweed => String::from("Fort Ironweed"),
-            MagentaBuilding::GrandMausoleumOfTheRodina => String::from("Grand Mausoleum of the Rodina"),
-            MagentaBuilding::GroveUniversity => String::from("Grove University"),
+            MagentaBuilding::GrandMausoleumOfTheRodina => {
+                String::from("Grand Mausoleum of the Rodina")
+            }
+            MagentaBuilding::GroveUniversity => {
+                String::from("Grove University")
+            }
             MagentaBuilding::MandrasPalace => String::from("Mandras Palace"),
-            MagentaBuilding::ObeliskOfTheCrescent => String::from("Obelisk of the Crescent"),
+            MagentaBuilding::ObeliskOfTheCrescent => {
+                String::from("Obelisk of the Crescent")
+            }
             MagentaBuilding::OpaleyesWatch => String::from("Opaleye's Watch"),
-            MagentaBuilding::ShrineOfTheElderTree => String::from("Shrine of the Elder Tree"),
+            MagentaBuilding::ShrineOfTheElderTree => {
+                String::from("Shrine of the Elder Tree")
+            }
             MagentaBuilding::SilvaForum => String::from("Silva Forum"),
-            MagentaBuilding::StatueOfTheBondmaker => String::from("Statue of the Bondmaker"),
+            MagentaBuilding::StatueOfTheBondmaker => {
+                String::from("Statue of the Bondmaker")
+            }
             MagentaBuilding::TheSkyBaths => String::from("The Sky Baths"),
             MagentaBuilding::TheStarloom => String::from("The Starloom"),
         }
@@ -146,7 +160,11 @@ impl YellowBuilding {
 
 // =============================================================================
 impl Space {
-    pub fn as_str(&self, idx: usize, scores_opt: Option<&HashMap<usize, i32>>) -> ColoredString {
+    pub fn as_str(
+        &self,
+        idx: usize,
+        scores_opt: Option<&HashMap<usize, i32>>,
+    ) -> ColoredString {
         let colored_string = match &self {
             Space::Building(building_type)
             | Space::BuildingWithOptResource(building_type, _)
@@ -190,20 +208,53 @@ impl Space {
     }
 }
 
-
 fn make_messages(
     score_card: &ScoreCard,
     building_config: &BuildingConfig,
 ) -> Vec<String> {
     let messages = vec![
         format!("{}", building_config.red().to_string().red()),
-        format!("{}: {}", building_config.blue().to_plural_string().blue(), score_card.score_blue()),
-        format!("{}: {}", building_config.orange().to_plural_string().truecolor(230, 131, 2), score_card.score_orange()),
-        format!("{}: {}", building_config.green().to_plural_string().green(), score_card.score_green()),
-        format!("{}: {}", building_config.gray().to_plural_string().truecolor(75, 75, 75), score_card.score_gray()),
-        format!("{}: {}", building_config.yellow().to_plural_string().yellow(), score_card.score_yellow()),
-        format!("{}: {}", building_config.black().to_plural_string().black(), score_card.score_black()),
-        format!("{}: {}", building_config.magenta().to_string().magenta(), score_card.score_magenta()),
+        format!(
+            "{}: {}",
+            building_config.blue().to_plural_string().blue(),
+            score_card.score_blue()
+        ),
+        format!(
+            "{}: {}",
+            building_config
+                .orange()
+                .to_plural_string()
+                .truecolor(230, 131, 2),
+            score_card.score_orange()
+        ),
+        format!(
+            "{}: {}",
+            building_config.green().to_plural_string().green(),
+            score_card.score_green()
+        ),
+        format!(
+            "{}: {}",
+            building_config
+                .gray()
+                .to_plural_string()
+                .truecolor(75, 75, 75),
+            score_card.score_gray()
+        ),
+        format!(
+            "{}: {}",
+            building_config.yellow().to_plural_string().yellow(),
+            score_card.score_yellow()
+        ),
+        format!(
+            "{}: {}",
+            building_config.black().to_plural_string().black(),
+            score_card.score_black()
+        ),
+        format!(
+            "{}: {}",
+            building_config.magenta().to_string().magenta(),
+            score_card.score_magenta()
+        ),
         format!("Unused spaces: {}", score_card.score_unused()),
     ];
 
@@ -227,8 +278,8 @@ impl Board {
         }
     }
 
-
-    pub fn print_scores(&self,
+    pub fn print_scores(
+        &self,
         score_card: &ScoreCard,
         building_config: &BuildingConfig,
     ) {
