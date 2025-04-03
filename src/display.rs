@@ -2,9 +2,9 @@ use std::collections::HashMap;
 
 use colored::{ColoredString, Colorize};
 
-use crate::board::space::{BuildingType, Space};
-use crate::board::Board;
-use crate::building_config::{
+use crate::game::space::{BuildingType, Space};
+use crate::game::board::Board;
+use crate::game::building::{
     BlackBuilding, BlueBuilding, BuildingConfig, GrayBuilding, GreenBuilding,
     MagentaBuilding, OrangeBuilding, RedBuilding, YellowBuilding,
 };

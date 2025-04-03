@@ -2,9 +2,9 @@ use std::collections::{HashMap, HashSet};
 
 use strum::IntoEnumIterator;
 
-use crate::board::space::BuildingType;
-use crate::board::Board;
-use crate::building_config::{BuildingConfig, MagentaBuilding};
+use crate::game::space::BuildingType;
+use crate::game::board::Board;
+use crate::game::building::{BuildingConfig, MagentaBuilding};
 use crate::score::{score_if_in_idx_set, score_per_each, ScoringContext};
 
 // -----------------------------------------------------------------------------

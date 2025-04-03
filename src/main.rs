@@ -1,14 +1,13 @@
-use crate::board::space::{BuildingType, Resource};
-use crate::board::Board;
-use crate::building_config::BuildingConfig;
-use crate::building_config::{
+use crate::game::space::{BuildingType, Resource};
+use crate::game::board::Board;
+use crate::game::building::BuildingConfig;
+use crate::game::building::{
     BlackBuilding, BlueBuilding, GrayBuilding, GreenBuilding, MagentaBuilding,
     OrangeBuilding, RedBuilding, YellowBuilding,
 };
 use crate::score::{score, ScoringContext};
 
-pub mod board;
-pub mod building_config;
+pub mod game;
 pub mod display;
 pub mod score;
 pub mod utils;

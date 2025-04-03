@@ -1,3 +1,5 @@
+// A space on the board.
+
 use strum_macros::EnumIter;
 
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]

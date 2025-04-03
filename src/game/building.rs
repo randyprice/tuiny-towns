@@ -1,3 +1,5 @@
+// Different kinds of buildings.
+
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub enum BlackBuilding {
     Bank,

@@ -1,8 +1,8 @@
+// A game board.
+
 use std::collections::{HashMap, HashSet};
 
-use crate::board::space::{BuildingType, Place, Space};
-
-pub mod space;
+use crate::game::space::{BuildingType, Place, Space};
 
 // =============================================================================
 pub struct Board {
