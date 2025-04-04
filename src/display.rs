@@ -4,7 +4,7 @@ use colored::{ColoredString, Colorize};
 
 use crate::game::space::{BuildingType, Space};
 use crate::game::board::Board;
-use crate::game::building::{
+use crate::game::piece::{
     BlackBuilding, BlueBuilding, BuildingConfig, GrayBuilding, GreenBuilding,
     MagentaBuilding, OrangeBuilding, RedBuilding, YellowBuilding,
 };

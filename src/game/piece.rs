@@ -1,3 +1,53 @@
+#[derive(Copy, Clone, Debug, Eq, PartialEq)]
+pub enum Resource {
+    Brick,
+    Glass,
+    Stone,
+    Wheat,
+    Wood,
+}
+
+#[derive(Copy, Clone, Debug, Eq, Hash, PartialEq)]
+pub enum BuildingColor {
+    Green,
+}
+
+#[derive(Copy, Clone, Debug, Eq, PartialEq)]
+pub enum BuildingId {
+    Almshouse
+}
+
+impl BuildingId {
+    pub fn color(&self) -> BuildingColor{
+        match self {
+            Self::Almshouse => BuildingColor::Green,
+        }
+    }
+}
+
+#[derive(Clone, Debug)]
+pub struct Building {
+    id: BuildingId,
+    color: BuildingColor,
+    resources: Vec<Resource>,
+}
+
+impl Building {
+    pub fn new(id: BuildingId) -> Self {
+        Self {
+            id,
+            color: id.color(),
+            resources: Vec::new(),
+        }
+    }
+    pub fn id(&self) -> BuildingId {
+        self.id
+    }
+    pub fn color(&self) -> BuildingColor {
+        self.color
+    }
+}
+
 // Different kinds of buildings.
 
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
@@ -70,6 +120,19 @@ pub enum YellowBuilding {
     Market,
     Tailor,
     Theater,
+}
+
+pub struct BuildingConfig2 {
+    green: BuildingId
+}
+
+impl BuildingConfig2 {
+    pub fn new(green: BuildingId) -> Self {
+        assert!(green.color() == BuildingColor::Green);
+        Self {
+            green,
+        }
+    }
 }
 
 pub struct BuildingConfig {

@@ -2,7 +2,7 @@ use std::collections::HashSet;
 
 use crate::game::space::{BuildingType, Space};
 use crate::game::board::Board;
-use crate::game::building::{BuildingConfig, MagentaBuilding, RedBuilding};
+use crate::game::piece::{BuildingConfig, MagentaBuilding, RedBuilding};
 use crate::score::{blue, magenta, orange, ScoringContext};
 
 pub mod farm;
@@ -106,7 +106,7 @@ pub fn feed(
 #[cfg(test)]
 mod test {
     use super::*;
-    use crate::game::building::{
+    use crate::game::piece::{
         BlackBuilding, BlueBuilding, GrayBuilding, GreenBuilding,
         MagentaBuilding, OrangeBuilding, RedBuilding, YellowBuilding,
     };

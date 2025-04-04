@@ -2,7 +2,7 @@ use std::collections::{HashMap, HashSet};
 
 use crate::game::space::BuildingType;
 use crate::game::board::Board;
-use crate::game::building::{BlueBuilding, BuildingConfig, MagentaBuilding};
+use crate::game::piece::{BlueBuilding, BuildingConfig, MagentaBuilding};
 use crate::score::{score_if_in_idx_set, score_per_each, ScoringContext};
 
 // -----------------------------------------------------------------------------
@@ -54,7 +54,7 @@ pub fn score(
 #[cfg(test)]
 mod test {
     use super::*;
-    use crate::game::building::{
+    use crate::game::piece::{
         BlackBuilding, BlueBuilding, GrayBuilding, GreenBuilding,
         MagentaBuilding, OrangeBuilding, RedBuilding, YellowBuilding,
     };

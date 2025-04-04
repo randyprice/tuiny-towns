@@ -2,14 +2,9 @@
 
 use strum_macros::EnumIter;
 
-#[derive(Copy, Clone, Debug, Eq, PartialEq)]
-pub enum Resource {
-    Brick,
-    Glass,
-    Stone,
-    Wheat,
-    Wood,
-}
+use crate::game::piece::{Building, Resource};
+
+use super::piece::BuildingColor;
 
 #[derive(Copy, Clone, Debug, EnumIter, Eq, Hash, PartialEq)]
 pub enum BuildingType {
@@ -109,5 +104,21 @@ impl Place for (BuildingType, Resource) {
 impl Place for (BuildingType, Vec<Resource>, usize) {
     fn to_space(self) -> Space {
         Space::BuildingWithResources(self.0, self.1)
+    }
+}
+
+#[derive(Clone)]
+pub enum Space2 {
+    Building(Building),
+    Resource(Resource),
+    Empty,
+}
+
+impl Space2 {
+    pub fn building_color(&self) -> Option<BuildingColor> {
+        match self {
+            Space2::Building(building) => Some(building.color()),
+            _ => None,
+        }
     }
 }

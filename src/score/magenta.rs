@@ -4,7 +4,7 @@ use strum::IntoEnumIterator;
 
 use crate::game::space::BuildingType;
 use crate::game::board::Board;
-use crate::game::building::{BuildingConfig, MagentaBuilding};
+use crate::game::piece::{BuildingConfig, MagentaBuilding};
 use crate::score::{score_if_in_idx_set, score_per_each, ScoringContext};
 
 // -----------------------------------------------------------------------------

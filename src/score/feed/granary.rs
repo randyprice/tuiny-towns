@@ -2,7 +2,7 @@ use std::collections::HashSet;
 
 use crate::game::space::BuildingType;
 use crate::game::board::Board;
-use crate::game::building::BuildingConfig;
+use crate::game::piece::BuildingConfig;
 use crate::score::feed::feedable_idxs;
 
 // -----------------------------------------------------------------------------
@@ -37,7 +37,7 @@ pub fn feed(board: &Board, building_config: &BuildingConfig) -> HashSet<usize> {
 #[cfg(test)]
 mod test {
     use super::*;
-    use crate::game::building::{
+    use crate::game::piece::{
         BlackBuilding, BlueBuilding, GrayBuilding, GreenBuilding,
         MagentaBuilding, OrangeBuilding, RedBuilding, YellowBuilding,
     };

@@ -4,7 +4,7 @@ use itertools::Itertools;
 
 use crate::game::space::BuildingType;
 use crate::game::board::Board;
-use crate::game::building::{BuildingConfig, MagentaBuilding};
+use crate::game::piece::{BuildingConfig, MagentaBuilding};
 use crate::score::feed::best_fed_idxs;
 use crate::score::ScoringContext;
 
@@ -58,7 +58,7 @@ pub fn feed(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::game::building::{
+    use crate::game::piece::{
         BlackBuilding, BlueBuilding, GrayBuilding, GreenBuilding,
         MagentaBuilding, OrangeBuilding, RedBuilding, YellowBuilding,
     };
